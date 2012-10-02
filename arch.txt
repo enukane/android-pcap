@@ -1,0 +1,9 @@
+UI
+
+Service
+	-> USB driver
+		-> Packet
+	-> Log file
+
+Log file presents as packet handler as threaded object that usb driver
+writes to?

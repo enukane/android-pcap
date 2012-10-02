@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory 
+        android:title="Channel Hopping" android:key="channel_hopping">
+        
+        
+        <CheckBoxPreference
+                android:key="channel_hop"
+                android:title="Channel hop"
+                android:summary="Channel hop"
+                android:defaultValue="true" />
+        
+        <ListPreference
+            android:defaultValue="6"
+            android:entries="@array/channelDisplayArrayG"
+            android:entryValues="@array/channelValueArrayG"
+            android:key="channel_lock"
+            android:summary="Locked channel"
+            android:title="Channel" />
+                        
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:key="channel_list" android:title="Hopping Channels">
+        
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_1"
+            android:summary=""
+            android:title="Channel 1" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_2"
+            android:summary=""
+            android:title="Channel 2" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_3"
+            android:summary=""
+            android:title="Channel 3" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_4"
+            android:summary=""
+            android:title="Channel 4" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_5"
+            android:summary=""
+            android:title="Channel 5" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_6"
+            android:summary=""
+            android:title="Channel 6" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_7"
+            android:summary=""
+            android:title="Channel 7" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_8"
+            android:summary=""
+            android:title="Channel 8" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_9"
+            android:summary=""
+            android:title="Channel 9" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_10"
+            android:summary=""
+            android:title="Channel 10" >
+        </CheckBoxPreference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ch_11"
+            android:summary=""
+            android:title="Channel 11" >
+        </CheckBoxPreference>
+</PreferenceCategory>
+    
+</PreferenceScreen>
