@@ -707,32 +707,33 @@ class Rtl8187Card extends UsbSource {
 		return ret;
 	}
 
-	
-	public int scanUsbDevices() {  
-		int ret = 0;
-		
+
+	@Override
+	public boolean scanUsbDevices() {  
         HashMap<String, UsbDevice> deviceList = mManager.getDeviceList();
         Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
         while(deviceIterator.hasNext()){
             UsbDevice device = deviceIterator.next();
             
             if (device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) {  
-            	
-            	/*
-        		Message msg = new Message();
-        		Bundle bundle = new Bundle();
-        		bundle.putString("text", "Found RTL8187 card...");
-        		msg.setData(bundle);
-        		mUsbHandler.sendMessage(msg);
-        		*/
-        		
             	mManager.requestPermission(device, mPermissionIntent);
-            	
-            	ret = 1;
+            
+            	return true;
             }
         }
         
-		return ret;
+		return false;
+	}
+
+	@Override
+	public boolean scanUsbDevice(UsbDevice device, boolean permission) {
+		if (device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) {  
+			if (!permission)
+            	mManager.requestPermission(device, mPermissionIntent);
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public void doShutdown() {
@@ -2117,13 +2118,27 @@ class Rtl8187Card extends UsbSource {
         return 1;
         		
 	}
-	
+
+    // Stub constructor
+    public Rtl8187Card() {
+    	super();
+    }
+    
 	public Rtl8187Card(UsbManager manager, Handler usbhandler, Context context,
 			PacketHandler packethandler, String usbpermission) {
 		super(manager, usbhandler, context, packethandler, usbpermission);
-		
-        if (scanUsbDevices() == 0) {
+	
+		/*
+        if (!scanUsbDevices()) {
     		sendText("Did not find any RTL8187 devices...", false);
         }
+        */
 	}
+
+	@Override
+	public UsbSource makeSource(UsbManager manager, Handler servicehandler, Context context,
+			PacketHandler packethandler, String permission) {
+		return (UsbSource) new Rtl8187Card(manager, servicehandler, context, packethandler, permission);
+	}
+
 };

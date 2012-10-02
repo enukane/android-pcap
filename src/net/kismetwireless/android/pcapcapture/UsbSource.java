@@ -50,6 +50,11 @@ abstract class UsbSource {
 	// Thing that does things with packets
 	protected PacketHandler mPacketHandler;
 
+	// Weak constructor
+	public UsbSource() {
+		// Does nothing but give us a way to add to a list for searching for cards
+	}
+	
 	public UsbSource(UsbManager manager, Handler servicehandler, Context context, 
 			PacketHandler packethandler, String permission) {
 		mUsbManager = manager;
@@ -65,8 +70,17 @@ abstract class UsbSource {
         	PendingIntent.getBroadcast(mContext, 0, new Intent(mPermission), 0);
 	}
 	
+	abstract public UsbSource makeSource(UsbManager manager, Handler servicehandler, Context context,
+			PacketHandler packethandler, String permission);
+
+	// Grab a specific device we have permission for
 	abstract public int attachUsbDevice(UsbDevice device);
-	abstract public int scanUsbDevices();
+	
+	// Return devices we want to look at
+	abstract public boolean scanUsbDevices();
+	
+	// Examine a device & ask for permission if we want to use it and don't have it already
+	abstract public boolean scanUsbDevice(UsbDevice device, boolean permission);
 
 	abstract public void doShutdown();
 	
