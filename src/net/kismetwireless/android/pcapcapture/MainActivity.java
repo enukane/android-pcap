@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -18,6 +20,8 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	String LOGTAG = "PcapCapture";
@@ -46,7 +50,15 @@ public class MainActivity extends Activity {
 			case PcapService.MSG_STATE:
 				b = msg.getData();
 				
-				// TODO handle state
+				if (b == null)
+					break;
+				
+				if (b.getBoolean(UsbSource.BNDL_RADIOPRESENT_BOOL, false)) {
+					TextView tv = (TextView) findViewById(R.id.textDashUsbDevice);
+
+					tv.setText(b.getString(UsbSource.BNDL_RADIOMAC_STRING, "no mac"));
+				}
+
 				break;
 			default:
 				super.handleMessage(msg);
@@ -64,6 +76,10 @@ public class MainActivity extends Activity {
 				Message msg = Message.obtain(null, PcapService.MSG_REGISTER_CLIENT);
 				msg.replyTo = mMessenger;
 				mService.send(msg);
+				
+				for (deferredUsbIntent di : mDeferredIntents) 
+					doSendDeferredIntent(di);
+				
 			} catch (RemoteException e) {
 				// Service has crashed before we can do anything, we'll soon be
 				// disconnected and reconnected, do nothing
@@ -72,7 +88,6 @@ public class MainActivity extends Activity {
 		
 		public void onServiceDisconnected(ComponentName className) {
 			mService = null;
-			mIsBound = false;
 		}
 	};
 	
@@ -80,7 +95,8 @@ public class MainActivity extends Activity {
 		if (mIsBound)
 			return;
 		
-		bindService(new Intent(MainActivity.this, PcapService.class), mConnection, Context.BIND_AUTO_CREATE);
+		bindService(new Intent(MainActivity.this, PcapService.class), mConnection, 
+				Context.BIND_AUTO_CREATE);
 		mIsBound = true;
 	}
 	
@@ -129,6 +145,52 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	void doSendDeferredIntent(deferredUsbIntent i) {
+		Message msg;
+		
+		Bundle b = new Bundle();
+		
+		Toast.makeText(mContext, "Sending deferred intent", Toast.LENGTH_SHORT).show();
+		
+		msg = Message.obtain(null, PcapService.MSG_USBINTENT);
+		
+		b.putParcelable("DEVICE", i.device);
+		b.putString("ACTION", i.action);
+		b.putBoolean("EXTRA", i.extrapermission);
+		
+		msg.setData(b);
+		
+		try {
+			mService.send(msg);
+		} catch (RemoteException e) {
+			// nothing
+		}
+	}
+	
+	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			
+			if (PcapService.ACTION_USB_PERMISSION.equals(action) ||
+					UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action) ||
+					UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+				synchronized (this) {
+					doBindService();
+					
+					deferredUsbIntent di = new deferredUsbIntent();
+					di.device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+					di.action = action;
+					di.extrapermission = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false);
+					
+					if (mService == null)
+						mDeferredIntents.add(di);
+					else
+						doSendDeferredIntent(di);
+				}
+			}
+		}
+	};
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,12 +201,21 @@ public class MainActivity extends Activity {
         Intent svc = new Intent(this, PcapService.class);
         startService(svc);
         doBindService();
+        
+        mPermissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(PcapService.ACTION_USB_PERMISSION), 0);
+        
+        IntentFilter filter = new IntentFilter(PcapService.ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        mContext.registerReceiver(mUsbReceiver, filter);
     }
     
     @Override
     public void onDestroy() {
     	super.onDestroy();
     	
+    	mContext.unregisterReceiver(mUsbReceiver);
+
     	doUnbindService();
     }
 

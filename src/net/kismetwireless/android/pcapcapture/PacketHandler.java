@@ -2,7 +2,7 @@ package net.kismetwireless.android.pcapcapture;
 
 import java.util.ArrayList;
 
-abstract class PacketHandler {
+abstract public class PacketHandler {
 	private Object mPacketLock = new Object();
 	ArrayList<UsbSource> mSourceArray = new ArrayList<UsbSource>();
 

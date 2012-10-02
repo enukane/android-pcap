@@ -1,27 +1,18 @@
 package net.kismetwireless.android.pcapcapture;
 
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Locale;
 
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.hardware.usb.UsbRequest;
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 /*
@@ -49,7 +40,7 @@ import android.util.Log;
  */
 
 
-class Rtl8187Card extends UsbSource {
+public class Rtl8187Card extends UsbSource {
 	String TAG = "rtl8187";
 	
 	private final int USB_ENDPOINT_OUT = 0x00;
@@ -709,27 +700,25 @@ class Rtl8187Card extends UsbSource {
 
 
 	@Override
-	public boolean scanUsbDevices() {  
-        HashMap<String, UsbDevice> deviceList = mManager.getDeviceList();
+	public ArrayList<UsbDevice> scanUsbDevices() {  
+		ArrayList<UsbDevice> rl = new ArrayList<UsbDevice>();
+		
+        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
         Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
         while(deviceIterator.hasNext()){
             UsbDevice device = deviceIterator.next();
             
             if (device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) {  
-            	mManager.requestPermission(device, mPermissionIntent);
-            
-            	return true;
+            	rl.add(device);
             }
         }
-        
-		return false;
+    
+        return rl;
 	}
 
 	@Override
-	public boolean scanUsbDevice(UsbDevice device, boolean permission) {
+	public boolean scanUsbDevice(UsbDevice device) {
 		if (device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) {  
-			if (!permission)
-            	mManager.requestPermission(device, mPermissionIntent);
 			return true;
 		}
 		
@@ -738,6 +727,9 @@ class Rtl8187Card extends UsbSource {
 	
 	public void doShutdown() {
 		mUsbThread.stopUsb();
+		
+		mRadioActive = false;
+		sendRadioState();
 	}
 	
 	private void usleep(Integer n) {
@@ -1880,7 +1872,7 @@ class Rtl8187Card extends UsbSource {
 					}
 					
 				} else if (l < 0) {
-					Log.e(TAG, "Failed to do bulkio");
+					// Log.e(TAG, "Failed to do bulkio");
 				}
 			}
 
@@ -1908,7 +1900,7 @@ class Rtl8187Card extends UsbSource {
 			return -1;
 		}
 		
-        UsbDeviceConnection connection = mManager.openDevice(device);
+        UsbDeviceConnection connection = mUsbManager.openDevice(device);
         if (connection != null && connection.claimInterface(intf, true)) {
         	mConnection = connection;
         	mDevice = device;
@@ -1916,7 +1908,7 @@ class Rtl8187Card extends UsbSource {
             Log.d(TAG, "open FAIL");
             
             mRadioActive = false;
-            sendRadioStatus();
+            sendRadioState();
     		
             return -1;
         }
@@ -2108,7 +2100,7 @@ class Rtl8187Card extends UsbSource {
 
         mRadioActive = true;
             
-		sendRadioStatus();	
+		sendRadioState();	
         
         rtl8187_set_channel(6);
     	// dumpOneFrame();
@@ -2120,25 +2112,21 @@ class Rtl8187Card extends UsbSource {
 	}
 
     // Stub constructor
-    public Rtl8187Card() {
-    	super();
+    public Rtl8187Card(UsbManager manager) {
+    	super(manager);
     }
     
-	public Rtl8187Card(UsbManager manager, Handler usbhandler, Context context,
-			PacketHandler packethandler, String usbpermission) {
-		super(manager, usbhandler, context, packethandler, usbpermission);
-	
-		/*
-        if (!scanUsbDevices()) {
-    		sendText("Did not find any RTL8187 devices...", false);
-        }
-        */
+	public Rtl8187Card(UsbManager manager, Handler usbhandler, 
+			Context context, PacketHandler packethandler) {
+		super(manager, usbhandler, context, packethandler);
 	}
 
 	@Override
-	public UsbSource makeSource(UsbManager manager, Handler servicehandler, Context context,
-			PacketHandler packethandler, String permission) {
-		return (UsbSource) new Rtl8187Card(manager, servicehandler, context, packethandler, permission);
+	public UsbSource makeSource(UsbDevice device, UsbManager manager, Handler servicehandler, 
+			Context context, PacketHandler packethandler) {
+		UsbSource s = (UsbSource) new Rtl8187Card(manager, servicehandler, context, packethandler);
+		s.attachUsbDevice(device);
+		return s;
 	}
 
 };

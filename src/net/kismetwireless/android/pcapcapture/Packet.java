@@ -1,6 +1,6 @@
 package net.kismetwireless.android.pcapcapture;
 
-class Packet {
+public class Packet {
 	private byte[] bytes;
 	private int signal = 0;
 	private int noise = 0;

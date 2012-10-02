@@ -18,9 +18,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
-class PcapService extends Service {
+public class PcapService extends Service {
 	private final String LOGTAG = "pcapcapture-service";
 
 	private Context mContext;
@@ -36,6 +37,8 @@ class PcapService extends Service {
 	private boolean mShutdown = false;
 
 	private SharedPreferences mPreferences;
+	
+	PcapLogger mPcapLogger;
 
 	public static final int MSG_REGISTER_CLIENT = 0;
 	public static final int MSG_UNREGISTER_CLIENT = 1;
@@ -52,6 +55,9 @@ class PcapService extends Service {
 	
 	private NotificationManager mNM;
 
+	private PendingIntent mPermissionIntent;
+	private UsbManager mUsbManager;
+	
 	class IncomingServiceHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -99,12 +105,17 @@ class PcapService extends Service {
 	}
 	
 	final Messenger mMessenger = new Messenger(new IncomingServiceHandler());
+
+	private Handler mDeviceHandler;
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		
-		mProbeList.add(new Rtl8187Card());
+		if (mUsbManager == null)
+	        mUsbManager = (UsbManager) getSystemService(USB_SERVICE);
+		
+		mProbeList.add(new Rtl8187Card(mUsbManager));
 	}
 	
 	@Override
@@ -117,6 +128,21 @@ class PcapService extends Service {
 		super.onDestroy();
 	}
 	
+	public void sendStateBundle(Bundle b) {
+		for (Messenger m : mClientList) {
+			try {
+				Log.d("USBLOG", "Sending to client " + m);
+				Message s = Message.obtain(null, MSG_STATE);
+				s.setData(new Bundle(b));
+		
+				m.send(s);
+			} catch (RemoteException e) {
+				Log.d(LOGTAG, "Lost a client: " + e);
+				mClientList.remove(m);
+			}
+		}
+	}
+	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		mContext = this;
@@ -124,7 +150,40 @@ class PcapService extends Service {
 		if (mNM == null)
 			mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		
+		if (mPermissionIntent == null)
+	        mPermissionIntent = PendingIntent.getBroadcast(mContext, 0, 
+	        		new Intent(ACTION_USB_PERMISSION), 0);
+
+		if (mPcapLogger == null)
+			mPcapLogger = new PcapLogger();
+		
+		// Devicehandler is a basic replicator up to the main messaging system to the UI
+		if (mDeviceHandler == null) {
+			mDeviceHandler = new Handler() {
+				@Override
+				public void handleMessage(Message msg) {
+					Log.d("USBLOG", "Replicating service message");
+					// Toast.makeText(mContext, "Replicating service message", Toast.LENGTH_SHORT).show();
+					sendStateBundle(msg.getData());
+				}
+
+			};		
+		}
+		
 		updatePreferences();
+		
+		// Toast.makeText(mContext, "Service starting", Toast.LENGTH_SHORT).show();
+		
+		// Look for already connected USB devices and initiate permissions requests for them
+		for (UsbSource s : mProbeList) {
+			ArrayList<UsbDevice> ud = s.scanUsbDevices();
+			
+			for (UsbDevice d : ud) {
+				if (!mDevMapping.containsKey(d.getDeviceId())) {
+					mUsbManager.requestPermission(d, mPermissionIntent);
+				}
+			}
+		}
 		
 		return START_STICKY;
 	}
@@ -155,6 +214,8 @@ class PcapService extends Service {
 	}
 	
 	private void handleUsbIntent(Bundle b) {
+		// Toast.makeText(mContext, "Handling USB intent in service", Toast.LENGTH_SHORT).show();
+
 		String action = b.getString("ACTION");
 	
 		if (ACTION_USB_PERMISSION.equals(action)) {
@@ -165,10 +226,17 @@ class PcapService extends Service {
 					if (device != null) {
 						// Find who can handle this, make a new source for it, start doing things
 						for (UsbSource s : mProbeList) {
-							if (s.scanUsbDevice(device, true)) {
-								// UsbSource newSource = s.makeSource(mUsbManager, servicehandler, mContext, packethandler, permission)
-								Log.d(LOGTAG, "Source " + s.getClass() + " would handle this");
+							if (s.scanUsbDevice(device)) {
+								if (mDevMapping.containsKey(device.getDeviceId()))
+									break;
 								
+								UsbSource newSource = s.makeSource(device, mUsbManager, mDeviceHandler, mContext, mPcapLogger);
+								
+								mDevMapping.put(device.getDeviceId(), s);
+								
+								Log.d(LOGTAG, "Source " + s.getClass() + " would handle this");
+								// Toast.makeText(mContext, "Source " + s.getClass() + " would claim device", Toast.LENGTH_SHORT).show();
+
 								break;
 							}
 						}
@@ -196,8 +264,10 @@ class PcapService extends Service {
 			if (device != null) {
 				for (UsbSource s : mProbeList) {
 					// Scanning will ask for permission so just stop
-					if (s.scanUsbDevice(device, false)) {
+					if (s.scanUsbDevice(device)) {
+						mUsbManager.requestPermission(device, mPermissionIntent);
 						Log.d(LOGTAG, "Source " + s.getClass() + " likes USB device");
+						// Toast.makeText(mContext, "Source " + s.getClass() + " likes USB device", Toast.LENGTH_SHORT).show();
 						break;
 					}
 				}
