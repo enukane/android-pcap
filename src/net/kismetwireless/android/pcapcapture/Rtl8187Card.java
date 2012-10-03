@@ -1883,7 +1883,6 @@ public class Rtl8187Card extends UsbSource {
     @Override
     public int attachUsbDevice(UsbDevice device) {	 
     	if (device.getVendorId() == 0x0dba && device.getProductId() == 0x8187) {
-    		Log.d(TAG, "Found device...");
     		// It's got a chance of being an 8187b
     		is_rtl8187b = 1;
     	}
@@ -1893,7 +1892,6 @@ public class Rtl8187Card extends UsbSource {
     		return -1;
 		}
 		
-		Log.d(TAG, "device interface count: " + device.getInterfaceCount());
 		UsbInterface intf = device.getInterface(0);
 		if (intf.getEndpointCount() == 0) {
 			Log.e(TAG, "could not find endpoints");
