@@ -80,7 +80,10 @@ abstract public class UsbSource {
 	// Examine a device & ask for permission if we want to use it and don't have it already
 	abstract public boolean scanUsbDevice(UsbDevice device);
 
-	abstract public void doShutdown();
+	public void doShutdown() {
+		mRadioActive = false;
+		sendRadioState();
+	}
 	
 	abstract public void setChannel(int ch);
 		
@@ -118,15 +121,15 @@ abstract public class UsbSource {
 	}
 	
 	protected void sendRadioState() {
-		if (mServiceHandler == null)
+		// Log.d("USBLOG", "Sending radio state");
+		if (mServiceHandler == null) {
+			// Log.d("USBLOG", "Can't send state, servicehandler null");
 			return;
+		}
 		
 		Message msg = new Message();
 		Bundle bundle = new Bundle();
 
-		// Log.d("USBLOG", "Sending radio status");
-		// Toast.makeText(mContext, "Sending radio status", Toast.LENGTH_SHORT).show();
-	
 		bundle.putBoolean(BNDL_RADIOPRESENT_BOOL, getRadioActive());
 		bundle.putString(BNDL_RADIOTYPE_STRING, getRadioType());
 		bundle.putString(BNDL_RADIOMAC_STRING, getRadioMac());

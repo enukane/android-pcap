@@ -1,11 +1,13 @@
 package net.kismetwireless.android.pcapcapture;
 
 public class Packet {
-	private byte[] bytes;
-	private int signal = 0;
-	private int noise = 0;
+	// Needs to be public so that JNI can get at it
+	public byte[] bytes;
+	public byte[] fcs;
+	public int signal = 0;
+	public int noise = 0;
 	
-	private int dlt = 0;
+	public int dlt = 0;
 		
 	// TODO add encoding, etc, if we can support it
 	
@@ -28,6 +30,10 @@ public class Packet {
 	
 	public void setBytes(byte[] b) {
 		bytes = b;
+	}
+	
+	public void setFcs(byte[] b) {
+		fcs = b;
 	}
 	
 	public int getSignal() {

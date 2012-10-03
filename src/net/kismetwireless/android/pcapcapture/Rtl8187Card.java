@@ -726,10 +726,9 @@ public class Rtl8187Card extends UsbSource {
 	}
 	
 	public void doShutdown() {
-		mUsbThread.stopUsb();
+		super.doShutdown();
 		
-		mRadioActive = false;
-		sendRadioState();
+		mUsbThread.stopUsb();
 	}
 	
 	private void usleep(Integer n) {
@@ -1859,15 +1858,29 @@ public class Rtl8187Card extends UsbSource {
     		
 			while (!stopped) {
 				int l = mConnection.bulkTransfer(mBulkEndpoint, buffer, sz, 1000);
+				int fcsofft = 0;
 				
 				if (l > 0) {
 					if (is_rtl8187b == 0 && l > 16)
 						l = l - 16;
 					else if (l > 20)
 						l = l - 20;
+				
+					boolean fcs = false;
+					if (l > 4) {
+						fcs = true;
+						fcsofft = l - 4;
+						l = l - 4;
+					}
 					
 					if (mPacketHandler != null) {
 						Packet p = new Packet(Arrays.copyOfRange(buffer, 0, l));
+					
+						/*
+						if (fcs)
+							p.setFcs(Arrays.copyOfRange(buffer, fcsofft - 1, 4));
+							*/
+						
 						mPacketHandler.handlePacket(usbsource, p);
 					}
 					
@@ -1885,6 +1898,7 @@ public class Rtl8187Card extends UsbSource {
     	mRadioType = "RTL8187 USB";
     	mRadioInfo = "Initializing USB device";
     	mRadioMac = "";
+    	mRadioActive = true;
     	sendRadioState();
     	
     	if (device.getVendorId() == 0x0dba && device.getProductId() == 0x8187) {

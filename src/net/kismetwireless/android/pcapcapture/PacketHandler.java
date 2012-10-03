@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 abstract public class PacketHandler {
 	private Object mPacketLock = new Object();
-	ArrayList<UsbSource> mSourceArray = new ArrayList<UsbSource>();
+	private ArrayList<UsbSource> mSourceArray = new ArrayList<UsbSource>();
+	
+	protected long handledBytes = 0;
+	protected int handledPackets = 0;
 
 	public PacketHandler() {
 		// Nothing?
@@ -28,5 +31,13 @@ abstract public class PacketHandler {
 	}
 
 	abstract public void handlePacket(UsbSource source, Packet packet);
+	
+	public int getHandledPackets() {
+		return handledPackets;
+	}
+	
+	public long getHandledBytes() {
+		return handledBytes;
+	}
 
 }

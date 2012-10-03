@@ -27,17 +27,12 @@ public class PcapService extends Service {
 	private Context mContext;
 
 	private ArrayList<Messenger> mClientList = new ArrayList<Messenger>();
-
 	private ArrayList<UsbSource> mSourceList = new ArrayList<UsbSource>();
-	
 	private ArrayList<UsbSource> mProbeList = new ArrayList<UsbSource>();
-	
 	private HashMap<Integer, UsbSource> mDevMapping = new HashMap<Integer, UsbSource>();
 
 	private boolean mShutdown = false;
-
 	private SharedPreferences mPreferences;
-	
 	PcapLogger mPcapLogger;
 
 	public static final int MSG_REGISTER_CLIENT = 0;
@@ -45,23 +40,46 @@ public class PcapService extends Service {
 	public static final int MSG_COMMAND = 2;
 	public static final int MSG_USBINTENT = 3;
 	public static final int MSG_DIE = 4;
-	public static final int MSG_STATE = 5;
-	public static final int MSG_RECONFIGURE_PREFS = 6;
+	public static final int MSG_RADIOSTATE = 5;
+	public static final int MSG_LOGSTATE = 6;
+	public static final int MSG_RECONFIGURE_PREFS = 7;
 	
 	public static final String ACTION_USB_PERMISSION =
 		PcapService.class + ".USB_PERMISSION";
-	
 	private static final int NOTIFICATION = 0x1337;
+	
+	public static final String BNDL_CMD_LOGFILE_STRING = "logfile";
+	public static final String BNDL_CMD_LOGFILE_STOP_BOOL = "logstop";
+	public static final String BNDL_CMD_LOGFILE_START_BOOL = "logstart";
+	
+	public static final String BNDL_STATE_LOGGING_BOOL = "logging";
+	public static final String BNDL_STATE_LOGFILE_PACKETS_INT = "logpackets";
+	public static final String BNDL_STATE_LOGFILE_SIZE_LONG = "logsize";
 	
 	private NotificationManager mNM;
 
 	private PendingIntent mPermissionIntent;
 	private UsbManager mUsbManager;
 	
+	private Bundle mLastUsbState;
+	
+	private Handler mTimeHandler = new Handler();
+	
+	private Runnable logStateTask = new Runnable() {
+		public void run() {
+			if (mShutdown) return;
+			
+			sendLogStateBundle();
+			
+			mTimeHandler.postDelayed(this, 1000);
+		}
+	};
+	
 	class IncomingServiceHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
 			Messenger c;
+			Bundle b;
 
 			switch (msg.what) {
 			case MSG_REGISTER_CLIENT:
@@ -70,7 +88,11 @@ public class PcapService extends Service {
 				if (!mClientList.contains(c))
 					mClientList.add(c);
 
-				// TODO send sync states
+				if (mLastUsbState != null)
+					sendStateBundle(mLastUsbState);
+				
+				sendLogStateBundle();
+				
 				break;
 			case MSG_UNREGISTER_CLIENT:
 				c = msg.replyTo;
@@ -81,6 +103,7 @@ public class PcapService extends Service {
 				break;
 
 			case MSG_DIE:
+				mShutdown = true;
 				stopSelf();
 				break;
 				
@@ -91,10 +114,22 @@ public class PcapService extends Service {
 				updatePreferences();
 				break;
 
-			case MSG_STATE:
+			case MSG_RADIOSTATE:
 				break;
 
 			case MSG_COMMAND:
+				b = msg.getData();
+				
+				if (b.containsKey(BNDL_CMD_LOGFILE_START_BOOL)) {
+					if (b.containsKey(BNDL_CMD_LOGFILE_STRING)) {
+						mPcapLogger.startLogging(b.getString(BNDL_CMD_LOGFILE_STRING));
+					}
+				} else {
+					mPcapLogger.stopLogging();
+				}
+				
+				sendLogStateBundle();
+				
 				break;
 
 			default:
@@ -126,15 +161,45 @@ public class PcapService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		
+		mShutdown = true;
+		
+		mTimeHandler.removeCallbacks(logStateTask);
 	}
 	
 	public void sendStateBundle(Bundle b) {
+		if (mLastUsbState != b)
+			mLastUsbState = new Bundle(b);
+		
 		for (Messenger m : mClientList) {
 			try {
 				Log.d("USBLOG", "Sending to client " + m);
-				Message s = Message.obtain(null, MSG_STATE);
+				Message s = Message.obtain(null, MSG_RADIOSTATE);
 				s.setData(new Bundle(b));
 		
+				m.send(s);
+			} catch (RemoteException e) {
+				Log.d(LOGTAG, "Lost a client: " + e);
+				mClientList.remove(m);
+			}
+		}
+	}
+	
+	public void sendLogStateBundle() {
+		Bundle b = new Bundle();
+	
+		b.putBoolean(BNDL_STATE_LOGGING_BOOL, mPcapLogger.getLogging());
+		b.putInt(BNDL_STATE_LOGFILE_PACKETS_INT, mPcapLogger.getHandledPackets());
+		b.putLong(BNDL_STATE_LOGFILE_SIZE_LONG, mPcapLogger.getHandledBytes());
+
+		if (mPcapLogger.getPath() != null)
+			b.putString(BNDL_CMD_LOGFILE_STRING, mPcapLogger.getPath());
+		
+		for (Messenger m : mClientList) {
+			try {
+				Message s = Message.obtain(null, MSG_LOGSTATE);
+				s.setData(new Bundle(b));
+				
 				m.send(s);
 			} catch (RemoteException e) {
 				Log.d(LOGTAG, "Lost a client: " + e);
@@ -162,7 +227,7 @@ public class PcapService extends Service {
 			mDeviceHandler = new Handler() {
 				@Override
 				public void handleMessage(Message msg) {
-					Log.d("USBLOG", "Replicating service message");
+					Log.d("USBLOG", "Replicating service message " + (Bundle) msg.getData());
 					// Toast.makeText(mContext, "Replicating service message", Toast.LENGTH_SHORT).show();
 					sendStateBundle(msg.getData());
 				}
@@ -184,6 +249,8 @@ public class PcapService extends Service {
 				}
 			}
 		}
+	
+		logStateTask.run();
 		
 		return START_STICKY;
 	}
@@ -232,9 +299,9 @@ public class PcapService extends Service {
 								
 								UsbSource newSource = s.makeSource(device, mUsbManager, mDeviceHandler, mContext, mPcapLogger);
 								
-								mDevMapping.put(device.getDeviceId(), s);
+								mDevMapping.put(device.getDeviceId(), newSource);
 								
-								Log.d(LOGTAG, "Source " + s.getClass() + " would handle this");
+								// Log.d(LOGTAG, "Source " + s.getClass() + " would handle this");
 								// Toast.makeText(mContext, "Source " + s.getClass() + " would claim device", Toast.LENGTH_SHORT).show();
 
 								break;
@@ -254,6 +321,7 @@ public class PcapService extends Service {
 					UsbSource ds = mDevMapping.get(device.getDeviceId());
 					
 					ds.doShutdown();
+					
 					mDevMapping.remove(device.getDeviceId());
 					mSourceList.remove(ds);
 				}
@@ -266,7 +334,7 @@ public class PcapService extends Service {
 					// Scanning will ask for permission so just stop
 					if (s.scanUsbDevice(device)) {
 						mUsbManager.requestPermission(device, mPermissionIntent);
-						Log.d(LOGTAG, "Source " + s.getClass() + " likes USB device");
+						// Log.d(LOGTAG, "Source " + s.getClass() + " likes USB device");
 						// Toast.makeText(mContext, "Source " + s.getClass() + " likes USB device", Toast.LENGTH_SHORT).show();
 						break;
 					}

@@ -37,7 +37,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="No USB device detected"
+                    android:text="No USB device"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
@@ -45,7 +45,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="00:00:00:00:00:00 Unknown" />
+                    android:text=" " />
             </LinearLayout>
         </TableRow>
 
@@ -77,12 +77,6 @@
                     android:text="File path"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
-                <android.support.v7.widget.Space
-                    android:id="@+id/space3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
                 <TextView
                     android:id="@+id/textDashFileSmall"
                     android:layout_width="wrap_content"
@@ -90,19 +84,81 @@
                     android:layout_weight="1"
                     android:text="Logged XYZ packets, 1024Kb" />
             </LinearLayout>
-
-            <android.support.v7.widget.Space
-                android:id="@+id/space2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
         </TableRow>
-
-        <android.support.v7.widget.Space
-            android:id="@+id/space1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
 
     </TableLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+    </LinearLayout>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginBottom="15dp" >
+
+        <TableRow
+            android:id="@+id/tableRowLogControl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true" >
+
+            <ImageView
+                android:id="@+id/imageDashLogControl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="15dp"
+                android:src="@drawable/ic_action_record" />
+
+            <TextView
+                android:id="@+id/textDashCaptureControl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="Start logging"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRowShare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:clickable="true" >
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="15dp"
+                android:src="@android:drawable/ic_menu_share" />
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="Share pcap file"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </TableRow>
+    </TableLayout>
 </LinearLayout>
