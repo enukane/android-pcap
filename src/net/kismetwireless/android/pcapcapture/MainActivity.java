@@ -55,10 +55,14 @@ public class MainActivity extends Activity {
 				
 				if (b.getBoolean(UsbSource.BNDL_RADIOPRESENT_BOOL, false)) {
 					TextView tv = (TextView) findViewById(R.id.textDashUsbDevice);
-
-					tv.setText(b.getString(UsbSource.BNDL_RADIOMAC_STRING, "no mac"));
+					TextView tvsmall = (TextView) findViewById(R.id.textDashUsbSmall);
+					
+					tv.setText(b.getString(UsbSource.BNDL_RADIOTYPE_STRING, "Unknown"));
+															
+					tvsmall.setText(b.getString(UsbSource.BNDL_RADIOINFO_STRING, 
+							"No info available"));
 				}
-
+				
 				break;
 			default:
 				super.handleMessage(msg);
@@ -88,6 +92,7 @@ public class MainActivity extends Activity {
 		
 		public void onServiceDisconnected(ComponentName className) {
 			mService = null;
+			mIsBound = false;
 		}
 	};
 	
@@ -95,8 +100,7 @@ public class MainActivity extends Activity {
 		if (mIsBound)
 			return;
 		
-		bindService(new Intent(MainActivity.this, PcapService.class), mConnection, 
-				Context.BIND_AUTO_CREATE);
+		bindService(new Intent(MainActivity.this, PcapService.class), mConnection, Context.BIND_AUTO_CREATE);
 		mIsBound = true;
 	}
 	

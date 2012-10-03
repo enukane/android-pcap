@@ -1882,19 +1882,27 @@ public class Rtl8187Card extends UsbSource {
 
     @Override
     public int attachUsbDevice(UsbDevice device) {	 
+    	mRadioType = "RTL8187 USB";
+    	mRadioInfo = "Initializing USB device";
+    	mRadioMac = "";
+    	sendRadioState();
+    	
     	if (device.getVendorId() == 0x0dba && device.getProductId() == 0x8187) {
     		// It's got a chance of being an 8187b
     		is_rtl8187b = 1;
     	}
 
     	if (device.getInterfaceCount() != 1) {
-    		Log.e(TAG, "could not find interface, getInterfaceCount != 1");
+    		mRadioInfo = "Could not find USB interface, getInterfaceCount != 1";
+
+    		sendRadioState();
     		return -1;
 		}
 		
 		UsbInterface intf = device.getInterface(0);
 		if (intf.getEndpointCount() == 0) {
-			Log.e(TAG, "could not find endpoints");
+			mRadioInfo = "Could not find USB endpoints";
+			sendRadioState();
 			return -1;
 		}
 		
@@ -1902,9 +1910,8 @@ public class Rtl8187Card extends UsbSource {
         if (connection != null && connection.claimInterface(intf, true)) {
         	mConnection = connection;
         	mDevice = device;
-        } else {
-            Log.d(TAG, "open FAIL");
-            
+        } else {            
+            mRadioInfo = "Could not claim and open USB device";
             mRadioActive = false;
             sendRadioState();
     		
@@ -1928,10 +1935,8 @@ public class Rtl8187Card extends UsbSource {
 			ep = null;
 		
 		if (ep == null) {
-			Log.e(TAG, "Couldn't find bulk endpoint...");
-			
-			sendText("Couldn't find bulk IO endpoint", true);
-			
+			mRadioInfo = "Unable to find bulk IO USB endpoint";
+			sendRadioState();
 			return -1;
 		}
 		
@@ -2072,13 +2077,11 @@ public class Rtl8187Card extends UsbSource {
         if (rf_init_type == RTL8225_RF_INIT)
         	rfit = "RTL8225";
         	
-        mRadioMac = Integer.toHexString(macaddr[0]) + ":" +
-       	 Integer.toHexString(macaddr[1]) + ":" + 
-       	 Integer.toHexString(macaddr[2]) + ":" + 
-       	 Integer.toHexString(macaddr[3]) + ":" +
-       	 Integer.toHexString(macaddr[4]) + ":" +
-       	 Integer.toHexString(macaddr[5]);
-        
+        mRadioMac =
+        	String.format("%02x:%02x:%02x:%02x:%02x:%02x",
+        			macaddr[0], macaddr[1], macaddr[2],
+        			macaddr[3], macaddr[4], macaddr[5]);
+                
         mRadioInfo = chipset_name + " V" + asic_rev + "+" + rfit;
 		
         // int hwr = rtl8187_init_hw();
@@ -2089,13 +2092,13 @@ public class Rtl8187Card extends UsbSource {
         
         int hws = rtl8187_start();
         
-        if (hws != 0)
+        if (hws != 0) {
         	sendText("Failed to start hw: " + hws, true);
-        else
+        	mRadioInfo = "Failed to calibrate and start hardware";
+        } else {
         	Log.d(TAG, "Successfully calibrated & started hw");
+        }
         
-        mRadioType = "RTL8187USB";
-
         mRadioActive = true;
             
 		sendRadioState();	

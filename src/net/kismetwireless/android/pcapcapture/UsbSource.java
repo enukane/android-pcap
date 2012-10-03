@@ -118,6 +118,9 @@ abstract public class UsbSource {
 	}
 	
 	protected void sendRadioState() {
+		if (mServiceHandler == null)
+			return;
+		
 		Message msg = new Message();
 		Bundle bundle = new Bundle();
 

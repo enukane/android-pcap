@@ -24,7 +24,7 @@
 
 /* Define to 1 if you have the declaration of `ether_hostton', and to 0 if you
    don't. */
-#define HAVE_DECL_ETHER_HOSTTON 1
+/* #define HAVE_DECL_ETHER_HOSTTON 1 */
 
 /* define if you have a /dev/dlpi */
 /* #undef HAVE_DEV_DLPI */
@@ -33,7 +33,7 @@
 /* #undef HAVE_DLPI_PASSIVE */
 
 /* Define to 1 if you have the `ether_hostton' function. */
-#define HAVE_ETHER_HOSTTON 1
+/* #define HAVE_ETHER_HOSTTON 1 */
 
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #define HAVE_FSEEKO 1
@@ -54,19 +54,19 @@
 /* #undef HAVE_LIBDLPI */
 
 /* if libnl exists */
-#define HAVE_LIBNL 1
+/* #define HAVE_LIBNL 1 */
 
 /* if libnl exists and is version 2.x */
-#define HAVE_LIBNL_2_x 1
+/* #define HAVE_LIBNL_2_x 1 */
 
 /* Define to 1 if you have the <limits.h> header file. */
-#define HAVE_LIMITS_H 1
+/* #define HAVE_LIMITS_H 1 */
 
 /* Define to 1 if you have the <linux/compiler.h> header file. */
 /* #undef HAVE_LINUX_COMPILER_H */
 
 /* Define to 1 if you have the <linux/ethtool.h> header file. */
-#define HAVE_LINUX_ETHTOOL_H 1
+/* #define HAVE_LINUX_ETHTOOL_H 1 */
 
 /* Define to 1 if you have the <linux/if_packet.h> header file. */
 #define HAVE_LINUX_IF_PACKET_H 1
@@ -153,7 +153,7 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strlcpy' function. */
-/* #undef HAVE_STRLCPY */
+#define HAVE_STRLCPY 1
 
 /* Define to 1 if the system has the type `struct BPF_TIMEVAL'. */
 /* #undef HAVE_STRUCT_BPF_TIMEVAL */
@@ -162,7 +162,7 @@
 /* #undef HAVE_STRUCT_ETHER_ADDR */
 
 /* Define to 1 if you have the <sys/bitypes.h> header file. */
-#define HAVE_SYS_BITYPES_H 1
+/* #define HAVE_SYS_BITYPES_H 1 */
 
 /* Define to 1 if you have the <sys/bufmod.h> header file. */
 /* #undef HAVE_SYS_BUFMOD_H */
@@ -213,7 +213,7 @@
 #define LINUX_USB_MON_DEV "/dev/usbmon"
 
 /* Define to 1 if netinet/ether.h declares `ether_hostton' */
-#define NETINET_ETHER_H_DECLARES_ETHER_HOSTTON /**/
+/* #define NETINET_ETHER_H_DECLARES_ETHER_HOSTTON */ /**/ 
 
 /* Define to 1 if netinet/if_ether.h declares `ether_hostton' */
 /* #undef NETINET_IF_ETHER_H_DECLARES_ETHER_HOSTTON */
@@ -243,19 +243,19 @@
 /* #undef PCAP_DEV_PREFIX */
 
 /* target host supports Bluetooth sniffing */
-#define PCAP_SUPPORT_BT 1
+/* #define PCAP_SUPPORT_BT 1 */
 
 /* target host supports CAN sniffing */
-#define PCAP_SUPPORT_CAN 1
+/* #define PCAP_SUPPORT_CAN 1 */
 
 /* target host supports canusb */
 /* #undef PCAP_SUPPORT_CANUSB */
 
 /* target host supports netfilter sniffing */
-#define PCAP_SUPPORT_NETFILTER 1
+/* #define PCAP_SUPPORT_NETFILTER 1 */
 
 /* target host supports USB sniffing */
-#define PCAP_SUPPORT_USB 1
+/* #define PCAP_SUPPORT_USB 1 */
 
 /* include ACN support */
 /* #undef SITA */

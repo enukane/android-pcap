@@ -52,6 +52,7 @@ static const char rcsid[] _U_ =
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
