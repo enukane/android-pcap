@@ -25,7 +25,7 @@ abstract public class UsbSource {
 	public static final String BNDL_RADIOSTATUS_STRING = "statusstring";
 	public static final String BNDL_RADIOPACKET_BYTES = "packet";
 	
-	public static final String BNDL_CHANNEL_INT = "channelset";
+	public static final String BNDL_RADIOCHANNEL_INT = "channelset";
 	
 	protected boolean mRadioActive;
 	protected String mRadioType;
@@ -34,6 +34,8 @@ abstract public class UsbSource {
 	
 	// DLT
 	protected int mDlt;
+	
+	protected int mLastChannel = 0;
 	
 	// USB manager
 	protected UsbManager mUsbManager;
@@ -85,7 +87,10 @@ abstract public class UsbSource {
 		sendRadioState();
 	}
 	
-	abstract public void setChannel(int ch);
+	public void setChannel(int ch) {
+		mLastChannel = ch;
+		sendRadioState();
+	}
 		
 	public int getDlt() {
 		return mDlt;
@@ -105,6 +110,10 @@ abstract public class UsbSource {
 	
 	public boolean getRadioActive() {
 		return mRadioActive;
+	}
+	
+	public int getLastChannel() {
+		return mLastChannel;
 	}
 	
 	protected void sendText(String text, boolean error) {
@@ -134,6 +143,7 @@ abstract public class UsbSource {
 		bundle.putString(BNDL_RADIOTYPE_STRING, getRadioType());
 		bundle.putString(BNDL_RADIOMAC_STRING, getRadioMac());
 		bundle.putString(BNDL_RADIOINFO_STRING, getRadioInfo());
+		bundle.putInt(BNDL_RADIOCHANNEL_INT, getLastChannel());
 		
 		msg.setData(bundle);
 

@@ -31,6 +31,11 @@
                 android:resource="@xml/device_filter" />
         </activity>
 
+        <activity
+            android:name=".ChannelPrefs"
+            android:label="@string/pref_channel"
+            android:theme="@style/AppTheme" />
+                    
         <service
             android:name=".PcapService"
             android:description="@string/pcap_service_desc" />

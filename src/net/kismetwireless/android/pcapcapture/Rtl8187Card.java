@@ -1424,6 +1424,7 @@ public class Rtl8187Card extends UsbSource {
 	
 	@Override
 	public void setChannel(int c) {
+		super.setChannel(c);
 		rtl8187_set_channel(c);
 	}
 
@@ -1875,6 +1876,7 @@ public class Rtl8187Card extends UsbSource {
 					
 					if (mPacketHandler != null) {
 						Packet p = new Packet(Arrays.copyOfRange(buffer, 0, l));
+						p.setDlt(PcapLogger.DLT_IEEE80211);
 					
 						/*
 						if (fcs)

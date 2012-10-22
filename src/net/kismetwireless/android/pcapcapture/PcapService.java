@@ -19,6 +19,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class PcapService extends Service {
@@ -63,6 +64,11 @@ public class PcapService extends Service {
 	
 	private Bundle mLastUsbState;
 	
+	private boolean mChannelHop = false;
+	private int mChannelLock = 6;
+	ArrayList<Integer> mChannelList = new ArrayList<Integer>();
+	private int mChannelPos = 0;
+	
 	private Handler mTimeHandler = new Handler();
 	
 	private Runnable logStateTask = new Runnable() {
@@ -72,6 +78,26 @@ public class PcapService extends Service {
 			sendLogStateBundle();
 			
 			mTimeHandler.postDelayed(this, 1000);
+		}
+	};
+	
+	private Runnable chanChangeTask = new Runnable() {
+		public void run() {
+			if (mShutdown) return;
+			
+			mTimeHandler.postDelayed(this, 250);
+			
+			if (!mChannelHop)
+				return;
+			
+			for (UsbSource u : mSourceList) {
+				u.setChannel(mChannelList.get(mChannelPos));
+			}
+			
+			mChannelPos++;
+			
+			if (mChannelPos == mChannelList.size())
+				mChannelPos = 0;
 		}
 	};
 	
@@ -222,6 +248,8 @@ public class PcapService extends Service {
 		if (mPcapLogger == null)
 			mPcapLogger = new PcapLogger();
 		
+		mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+		
 		// Devicehandler is a basic replicator up to the main messaging system to the UI
 		if (mDeviceHandler == null) {
 			mDeviceHandler = new Handler() {
@@ -251,11 +279,23 @@ public class PcapService extends Service {
 		}
 	
 		logStateTask.run();
+		chanChangeTask.run();
 		
 		return START_STICKY;
 	}
 	
 	private void updatePreferences() {
+		mChannelHop = mPreferences.getBoolean(MainActivity.PREF_CHANNELHOP, true);
+		String chpref = mPreferences.getString(MainActivity.PREF_CHANNEL, "11");
+		mChannelLock = Integer.parseInt(chpref);
+		
+		mChannelList.clear();
+		for (int c = 1; c <= 11; c++) {
+			if (mPreferences.getBoolean(MainActivity.PREF_CHANPREFIX + Integer.toString(c), true)) {
+				mChannelList.add(c);
+			}
+		}
+		
 		return;
 	}
 	

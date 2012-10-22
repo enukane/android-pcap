@@ -21,8 +21,11 @@ public class PcapLogger extends PacketHandler {
 	private native boolean openPcap(String path, int dlt) throws IOException;
 	private native void closePcap();
 	private native boolean logPacket(Packet p);
+	// TODO add signaling
+	private native boolean logPPIPacket(Packet p);
 	
-	private static int DLT_IEEE80211 = 105;
+	public static int DLT_IEEE80211 = 105;
+	public static int DLT_PPI = 192;
 	
 	@Override
 	public void handlePacket(UsbSource s, Packet p) {
@@ -30,7 +33,7 @@ public class PcapLogger extends PacketHandler {
 			handledPackets++;
 			handledBytes += p.getBytes().length;
 			
-			logPacket(p);
+			logPPIPacket(p);
 		}
 	}
 	
@@ -61,7 +64,7 @@ public class PcapLogger extends PacketHandler {
 		pcapPath = path;
 		
 		try {
-			loggingEnabled = openPcap(path, DLT_IEEE80211);
+			loggingEnabled = openPcap(path, DLT_PPI);
 		} catch (IOException e) {
 			Log.e(LOGTAG, "Failed to open pcap: " + e);
 			loggingEnabled = false;

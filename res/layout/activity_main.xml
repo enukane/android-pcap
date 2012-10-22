@@ -86,7 +86,51 @@
             </LinearLayout>
         </TableRow>
 
+        <TableRow
+            android:id="@+id/tableRow3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" >
+
+            <ImageView
+                android:id="@+id/imageView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="15dp"
+                android:src="@drawable/ic_action_chanhop" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/textChannelHop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Channel hop disabled"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/textChannelHopSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Channels 1,2,3,4,5,6" />
+            </LinearLayout>
+
+        </TableRow>
+
     </TableLayout>
+    
+    <fragment
+        android:id="@+id/fragment_filelist"
+        android:name="net.kismetwireless.android.pcapcapture.FilelistFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" 
+        android:layout_weight="1" />
 
     <LinearLayout
         android:layout_width="match_parent"
