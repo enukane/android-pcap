@@ -1,0 +1,4 @@
+
+    <menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item android:id="@+id/itemShare" android:title="@string/popup_share" android:icon="@drawable/ic_menu_share"></item>
+    </menu>

@@ -372,7 +372,8 @@ public class MainActivity extends Activity {
 				pcapdetails = "Error: " + e;
 				Log.e(LOGTAG, "Pcap error: " + e);
 			}
-			FileEntry f = new FilelistFragment.FileEntry(R.drawable.icon_wireshark, fn, pcapdetails);
+			FileEntry f = new FilelistFragment.FileEntry(directory, fn, 
+					R.drawable.icon_wireshark, fn, pcapdetails);
 
 			return f;
 		}
@@ -433,6 +434,7 @@ public class MainActivity extends Activity {
 		
 		FilelistFragment list = new FilelistFragment(new File("/mnt/sdcard/pcap"), 1000);
 		list.registerFiletype("cap", new PcapFileTyper());
+		list.setFavorites(true);
 		list.Populate();
 		getFragmentManager().beginTransaction().add(R.id.fragment_filelist, list).commit();
 
