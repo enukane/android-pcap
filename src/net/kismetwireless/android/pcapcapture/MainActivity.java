@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import net.kismetwireless.android.pcapcapture.FilelistFragment.FileEntry;
-
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -35,13 +35,13 @@ import android.widget.ImageView;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity { 
 	String LOGTAG = "PcapCapture";
 
 	PendingIntent mPermissionIntent;
 	UsbManager mUsbManager;
 	Context mContext;
-	
+
 	SharedPreferences mPreferences;
 
 	Messenger mService = null;
@@ -60,6 +60,8 @@ public class MainActivity extends Activity {
 		mTextDashChanhopSmall;
 	private TableRow mRowLogControl, mRowShare;
 	private ImageView mImageControl;
+	
+	private Sidebar mSidebar;
 
 	private String mLogPath = "";
 	private boolean mLocalLogging = false, mLogging = false, mUsbPresent = false;
@@ -67,13 +69,13 @@ public class MainActivity extends Activity {
 	private long mLogSize = 0;
 	private String mUsbType = "", mUsbInfo = "";
 	private int mLastChannel = 0;
-	
+
 	public static int PREFS_REQ = 0x1001;
-	
+
 	public static final String PREF_CHANNELHOP = "channel_hop";
 	public static final String PREF_CHANNEL = "channel_lock";
 	public static final String PREF_CHANPREFIX = "ch_";
-	
+
 	private boolean mChannelHop;
 	private int mChannelLock;
 	ArrayList<Integer> mChannelList = new ArrayList<Integer>();
@@ -187,12 +189,12 @@ public class MainActivity extends Activity {
 			Log.d(LOGTAG, "Failed to send die message: " + e);
 		}
 	}
-	
+
 	private void doUpdatePrefs() {
 		mChannelHop = mPreferences.getBoolean(PREF_CHANNELHOP, true);
 		String chpref = mPreferences.getString(PREF_CHANNEL, "11");
 		mChannelLock = Integer.parseInt(chpref);
-		
+
 		mChannelList.clear();
 		for (int c = 1; c <= 11; c++) {
 			if (mPreferences.getBoolean(PREF_CHANPREFIX + Integer.toString(c), false)) {
@@ -340,34 +342,34 @@ public class MainActivity extends Activity {
 			mTextDashLogControl.setText("Stop logging");
 			mImageControl.setImageResource(R.drawable.ic_action_stop);
 		}
-		
+
 		if (mChannelHop) {
 			mTextDashChanhop.setText("Channel hopping enabled");
-			
+
 			String s = "";
 			for (Integer i : mChannelList)  {
 				s += i;
-				
+
 				if (mChannelList.indexOf(i) != mChannelList.size() - 1)
 					s += ", ";
-				
+
 				if (mLastChannel != 0)
 					s += " (" + mLastChannel + ")";
 			}
-			
+
 			mTextDashChanhopSmall.setText(s);
 		} else {
 			mTextDashChanhop.setText("Channel hopping disabled");
 			mTextDashChanhopSmall.setText("Locked to channel " + mChannelLock);
 		}
 	}
-	
+
 	public class PcapFileTyper extends FilelistFragment.FileTyper {
 		@Override
 		FilelistFragment.FileEntry getEntry(File directory, String fn) {
 			String pcapdetails = "No pcap data";
 			try {
-				 pcapdetails = PcapHelper.countPcapFile(directory.toString() + "/" + fn) + " packets";
+				pcapdetails = PcapHelper.countPcapFile(directory.toString() + "/" + fn) + " packets";
 			} catch (IOException e) {
 				pcapdetails = "Error: " + e;
 				Log.e(LOGTAG, "Pcap error: " + e);
@@ -401,11 +403,11 @@ public class MainActivity extends Activity {
 		// make the directory on the sdcard
 		// TODO make this not hardcoded
 		File f = new File("/mnt/sdcard/pcap");
-	
+
 		if (!f.exists()) {
 			f.mkdir();
 		}
-		
+
 		setContentView(R.layout.activity_main);
 
 		mTextDashUsb = (TextView) findViewById(R.id.textDashUsbDevice);
@@ -431,12 +433,21 @@ public class MainActivity extends Activity {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		mContext.registerReceiver(mUsbReceiver, filter);
-		
+
+		/*
 		FilelistFragment list = new FilelistFragment(new File("/mnt/sdcard/pcap"), 1000);
 		list.registerFiletype("cap", new PcapFileTyper());
 		list.setFavorites(true);
 		list.Populate();
 		getFragmentManager().beginTransaction().add(R.id.fragment_filelist, list).commit();
+		 */
+		FilelistFragment list = (FilelistFragment) getFragmentManager().findFragmentById(R.id.fragment_filelist);
+		list.registerFiletype("cap", new PcapFileTyper());
+		list.setDirectory(new File("/mnt/sdcard/pcap"));
+		list.setRefreshTimer(1000);
+		list.setFavorites(true);
+		list.Populate();
+		// getFragmentManager().beginTransaction().add(R.id.fragment_filelist, list).commit();
 
 		mRowLogControl.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -464,8 +475,16 @@ public class MainActivity extends Activity {
 			}
 		});
 
+		ActionBar bar = getActionBar();
+		bar.setDisplayHomeAsUpEnabled(true);
+
+		mSidebar = (Sidebar) findViewById(R.id.slideMenu);
+		mSidebar.init(this, 333);
+
+		// mSlideMenu.show();
+
 		doUpdatePrefs();
-		
+
 		doUpdateUi();
 	}
 
@@ -489,18 +508,21 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case android.R.id.home:            
+			mSidebar.show();
+			return true;        
 		case R.id.menu_settings:
 			startActivityForResult(new Intent(this, ChannelPrefs.class), PREFS_REQ);
 			break;
 		}
-		
+
 		return true;
 	}
-	
+
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == PREFS_REQ) {
 			doUpdateUi();
@@ -509,7 +531,7 @@ public class MainActivity extends Activity {
 
 	}
 
-	
+
 	private void shareFile() {
 		Intent i = new Intent(Intent.ACTION_SEND); 
 		i.setType("application/cap"); 
@@ -526,7 +548,7 @@ public class MainActivity extends Activity {
 
 			alertbox.setMessage("Pcap currently in progress.  While you may share " +
 					"the file in progress, it may not include the most recently " +
-					"captured packets.");
+			"captured packets.");
 
 			alertbox.setNegativeButton("Don't Share", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface arg0, int arg1) {
@@ -545,5 +567,4 @@ public class MainActivity extends Activity {
 			shareFile();
 		}
 	}
-
 }

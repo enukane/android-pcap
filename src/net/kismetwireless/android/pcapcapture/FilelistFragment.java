@@ -68,6 +68,14 @@ public class FilelistFragment extends ListFragment {
 		mDirectory = directory;
 		mTimeout = timer;
 	}
+	
+	public void setDirectory(File directory) {
+		mDirectory = directory;
+	}
+	
+	public void setRefreshTimer(int timer) {
+		mTimeout = timer;
+	}
 
 	public void Populate() {
 		ArrayList<FileEntry> al = new ArrayList<FileEntry>();
@@ -81,7 +89,10 @@ public class FilelistFragment extends ListFragment {
 			Log.d(LOGTAG, "Fn " + fn + " ext '" + ext + "'");
 
 			if (mFileTypeMap.containsKey(ext)) {
-				al.add(mFileTypeMap.get(ext).getEntry(mDirectory, fn));
+				FileEntry fe = mFileTypeMap.get(ext).getEntry(mDirectory, fn);
+				
+				if (fe != null)
+					al.add(fe);
 			}
 		}
 

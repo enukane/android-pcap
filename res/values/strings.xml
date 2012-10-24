@@ -8,4 +8,7 @@
     <string name="pref_channel">Channel Preferences</string>
     <string name="popup_share">Share</string>
     <string name="popup_delete">Delete</string>
+
+    <color name="sidebar">#505050</color>
+
 </resources>
