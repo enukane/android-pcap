@@ -163,7 +163,10 @@ public class Sidebar extends LinearLayout {
 		// add the slide menu to parent
 		parent = (FrameLayout) content.getParent();
 		LayoutInflater inflater = (LayoutInflater) act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		menu = inflater.inflate(R.layout.sidebar, null);
+		
+		if (menu == null)
+			menu = inflater.inflate(R.layout.sidebar, null);
+		
 		FrameLayout.LayoutParams lays = new FrameLayout.LayoutParams(-1, -1, 3);
 		lays.setMargins(0, statusHeight, 0, 0);
 		menu.setLayoutParams(lays);

@@ -5,6 +5,9 @@
 #include <errno.h>
 #include <pcap/pcap.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define MAX_PACKET_LEN 8192
 
@@ -290,7 +293,7 @@ JNIEXPORT jboolean JNICALL Java_net_kismetwireless_android_pcapcapture_PcapLogge
 }
 
 JNIEXPORT jint JNICALL Java_net_kismetwireless_android_pcapcapture_PcapHelper_countPcapFile(JNIEnv *env, jobject this,
-																			jstring file) {
+																			jstring file, jint max) {
 	jboolean isCopy;
 	char *filepath = NULL;
 	char buf[1024];
@@ -309,23 +312,18 @@ JNIEXPORT jint JNICALL Java_net_kismetwireless_android_pcapcapture_PcapHelper_co
 
 	filepath = (char *) (*env)->GetStringUTFChars(env, file, &isCopy);
 
-	__android_log_print(ANDROID_LOG_DEBUG, "kismet", "path '%s'", filepath);
-
 	if ((dumpfile = pcap_open_offline(filepath, buf)) == NULL) {
 		(*env)->ReleaseStringUTFChars(env, file, filepath);
 		(*env)->ThrowNew(env, class_ioex, buf);
 		return 0;
 	}
 
-	while (pcap_next(dumpfile, &ph) != NULL) 
+	while (pcap_next(dumpfile, &ph) != NULL && npackets < max) 
 		npackets++;
 
 	pcap_close(dumpfile);
 
 	(*env)->ReleaseStringUTFChars(env, file, filepath);
 
-	__android_log_print(ANDROID_LOG_DEBUG, "kismet", "path '%s' packets %d", filepath, npackets);
-
 	return npackets;
 }
-

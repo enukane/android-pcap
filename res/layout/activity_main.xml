@@ -178,41 +178,6 @@
                     android:text="Start logging"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
             </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRowShare"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:clickable="true" >
-
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="15dp"
-                    android:src="@android:drawable/ic_menu_share" />
-
-                <TextView
-                    android:id="@+id/textView1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="Share pcap file"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
-            </TableRow>
         </TableLayout>
     </LinearLayout>
 

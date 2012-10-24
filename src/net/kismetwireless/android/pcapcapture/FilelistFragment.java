@@ -1,5 +1,18 @@
 package net.kismetwireless.android.pcapcapture;
 
+/* File list fragment w/ optional favorite support
+ * 
+ * Caller provides multiple implementations of FileTyper functor class via
+ * RegisterFileType; FileTyper creates icons and descriptive text of file
+ * contents.
+ * 
+ * Optional favorite support ties into sharedpreferences to store favorited
+ * file status
+ * 
+ * Built-in support for sharing and deleting files from the list
+ * 
+ */
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -31,8 +44,8 @@ public class FilelistFragment extends ListFragment {
 	private Handler mTimeHandler = new Handler();
 	private FileArrayAdapter mFileAdapter;
 	private boolean mFavorites = false;
-	SharedPreferences mPreferences;
-	
+	private SharedPreferences mPreferences;
+
 	private Runnable updateTask = new Runnable() {
 		@Override
 		public void run() {
@@ -81,18 +94,26 @@ public class FilelistFragment extends ListFragment {
 		ArrayList<FileEntry> al = new ArrayList<FileEntry>();
 
 		for (String fn : mDirectory.list()) {
-			Log.d(LOGTAG, fn);
-
 			int pos = fn.lastIndexOf('.');
 			String ext = fn.substring(pos+1);
 
-			Log.d(LOGTAG, "Fn " + fn + " ext '" + ext + "'");
-
 			if (mFileTypeMap.containsKey(ext)) {
+				// Find if we have an older version and update it
 				FileEntry fe = mFileTypeMap.get(ext).getEntry(mDirectory, fn);
 				
-				if (fe != null)
+				if (fe != null) {
+					int i = -1;
+				
+					if (mFileList != null)
+						i = mFileList.lastIndexOf(fe);
+					
+					if (i >= 0) {
+						fe = mFileList.get(i);
+						fe.refreshFile(mDirectory, fn);
+					}
+					
 					al.add(fe);
+				}
 			}
 		}
 
@@ -112,6 +133,8 @@ public class FilelistFragment extends ListFragment {
 		setListAdapter(mFileAdapter);
 		
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+	
+		this.setEmptyText("No files...");
 	}
 
 	public static class FileEntry {
@@ -120,13 +143,56 @@ public class FilelistFragment extends ListFragment {
 		String mSmalltext;
 		File mDirectory;
 		String mFname;
+		File mFile;
+		FileTyper mFileTyper;
+		long mLastModified;
+		boolean mDirty = false;
 
-		public FileEntry(File directory, String fname, int iconid, String text, String small) {
+		public FileEntry(File directory, String fname, int iconid, String text, String small,
+				FileTyper typer) {
 			this.mDirectory = directory;
 			this.mFname = fname;
 			this.mIconId = iconid;
 			this.mText = text;
 			this.mSmalltext = small;
+			this.mFileTyper = typer;
+			this.mFile = new File(directory + "/" + fname);
+			
+			this.mLastModified = this.mFile.lastModified();
+		}
+	
+		@Override
+		public boolean equals(Object x) {
+			return ((FileEntry) x).getFile().equals(this.getFile());
+		}
+		
+		@Override
+		public int hashCode() {
+			return this.getFile().hashCode();
+		}
+		
+		public boolean getDirty() {
+			boolean d = mDirty;
+			mDirty = false;
+			
+			return d;
+		}
+		
+		public File getFile() {
+			return mFile;
+		}
+		
+		public void refreshFile(File directory, String fname) {
+			File f = new File(directory + "/" + fname);
+			
+			if (f.lastModified() != mLastModified) {
+				mLastModified = f.lastModified();
+				mDirty = true;
+			}
+		}
+		
+		public FileTyper getFileTyper() {
+			return mFileTyper;
 		}
 
 		public File getDirectory() {
@@ -144,9 +210,13 @@ public class FilelistFragment extends ListFragment {
 		public String getText() {
 			return mText;
 		}
-
+		
 		public String getSmallText() {
 			return mSmalltext;
+		}
+		
+		public void setSmallText(String t) {
+			mSmalltext = t;
 		}
 	}
 
@@ -172,11 +242,13 @@ public class FilelistFragment extends ListFragment {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View view = convertView;
+			boolean newView = false;
 
 			// initialize a view first
 			if (view == null) {
 				LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
 				view = inflater.inflate(mLayoutId, parent, false);
+				newView = true;
 			}
 
 			// FileEntry mitem = mFiles[position];
@@ -190,6 +262,10 @@ public class FilelistFragment extends ListFragment {
 			icon.setImageResource(mitem.getIconId());
 			text.setText(mitem.getText());
 			smalltext.setText(mitem.getSmallText());
+			
+			// Queue an update to the details
+			if (newView || mitem.getDirty())
+				mitem.getFileTyper().updateDetailsView(smalltext, mitem);
 			
 			final String favkey = FileUtils.makeFavoriteKey(mitem.getDirectory(), mitem.getFilename());
 			
@@ -278,9 +354,31 @@ public class FilelistFragment extends ListFragment {
 			return mFiles.size();
 		}
 	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		
+		mTimeHandler.removeCallbacks(updateTask);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		
+		if (mTimeout > 0) {
+			Populate();
+		}
+	}
+	
+
 
 	public static abstract class FileTyper {
-		abstract FileEntry getEntry(File directory, String fname);
+		public abstract FileEntry getEntry(File directory, String fname);
+	
+		// Perform a long/complex update of the details, this should be done as a runnable
+		// posting to the view
+		public abstract void updateDetailsView(final TextView v, final FileEntry fe); 
 	}
 
 }

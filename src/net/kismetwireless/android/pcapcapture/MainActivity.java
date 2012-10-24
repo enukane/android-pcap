@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
 	private TextView mTextDashUsb, mTextDashUsbSmall, mTextDashFile, 
 		mTextDashFileSmall, mTextDashLogControl, mTextDashChanhop,
 		mTextDashChanhopSmall;
-	private TableRow mRowLogControl, mRowShare;
+	private TableRow mRowLogControl;
 	private ImageView mImageControl;
 	
 	private Sidebar mSidebar;
@@ -366,7 +366,10 @@ public class MainActivity extends Activity {
 
 	public class PcapFileTyper extends FilelistFragment.FileTyper {
 		@Override
-		FilelistFragment.FileEntry getEntry(File directory, String fn) {
+		public FilelistFragment.FileEntry getEntry(File directory, String fn) {
+			/*
+			 * Fetching data is complex so we implement this as a runnable that happens
+			 * on demand
 			String pcapdetails = "No pcap data";
 			try {
 				pcapdetails = PcapHelper.countPcapFile(directory.toString() + "/" + fn) + " packets";
@@ -374,10 +377,39 @@ public class MainActivity extends Activity {
 				pcapdetails = "Error: " + e;
 				Log.e(LOGTAG, "Pcap error: " + e);
 			}
+			*/
+			
 			FileEntry f = new FilelistFragment.FileEntry(directory, fn, 
-					R.drawable.icon_wireshark, fn, pcapdetails);
+					R.drawable.icon_wireshark, fn, "Fetching Pcap data...", this);
 
 			return f;
+		}
+		
+		@Override
+		public void updateDetailsView(final TextView v, final FileEntry fe) {
+			v.post(new Runnable() {
+				public void run() {
+					String pcapdetails = "No pcap data";
+					int npackets = 0;
+					
+					try {
+						npackets = 
+							PcapHelper.countPcapFile(fe.getDirectory().toString() + "/" + fe.getFilename(), 50000);
+						if (npackets == 50000) {
+							pcapdetails = "50000+ packets";
+						} else {
+							pcapdetails = npackets + " packets";
+						}
+					} catch (IOException e) {
+						pcapdetails = "Error: " + e;
+						Log.e(LOGTAG, "Pcap error: " + e);
+					}
+				
+					fe.setSmallText(pcapdetails);
+					v.setText(pcapdetails);
+				}
+			});
+			
 		}
 	}
 
@@ -418,7 +450,6 @@ public class MainActivity extends Activity {
 		mTextDashChanhop = (TextView) findViewById(R.id.textChannelHop);
 		mTextDashChanhopSmall = (TextView) findViewById(R.id.textChannelHopSmall);
 
-		mRowShare = (TableRow) findViewById(R.id.tableRowShare);
 		mRowLogControl = (TableRow) findViewById(R.id.tableRowLogControl);
 
 		mImageControl = (ImageView) findViewById(R.id.imageDashLogControl);
@@ -444,7 +475,7 @@ public class MainActivity extends Activity {
 		FilelistFragment list = (FilelistFragment) getFragmentManager().findFragmentById(R.id.fragment_filelist);
 		list.registerFiletype("cap", new PcapFileTyper());
 		list.setDirectory(new File("/mnt/sdcard/pcap"));
-		list.setRefreshTimer(1000);
+		list.setRefreshTimer(2000);
 		list.setFavorites(true);
 		list.Populate();
 		// getFragmentManager().beginTransaction().add(R.id.fragment_filelist, list).commit();
@@ -465,24 +496,17 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		mRowShare.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (mLogPath.equals(""))
-					return;
-
-				shareFileDialog();
-			}
-		});
-
 		ActionBar bar = getActionBar();
 		bar.setDisplayHomeAsUpEnabled(true);
 
 		mSidebar = (Sidebar) findViewById(R.id.slideMenu);
 		mSidebar.init(this, 333);
 
-		// mSlideMenu.show();
-
+		Log.d(LOGTAG, "Pcap dir uses " + FileUtils.countFileSizes(new File("/mnt/sdcard/pcap"), 
+				new String[] {"cap"}, false, false, null));
+		Log.d(LOGTAG, "Pcap dir favorites " + FileUtils.countFileSizes(new File("/mnt/sdcard/pcap"), 
+				new String[] {"cap"}, true, false, mPreferences));
+		
 		doUpdatePrefs();
 
 		doUpdateUi();
@@ -501,6 +525,20 @@ public class MainActivity extends Activity {
 		mContext.unregisterReceiver(mUsbReceiver);
 
 		doUnbindService();
+	}
+	
+	@Override 
+	public void onPause() {
+		super.onPause();
+		
+		doUnbindService();
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		
+		doBindService();
 	}
 
 	@Override

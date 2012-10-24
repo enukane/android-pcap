@@ -7,6 +7,6 @@ public class PcapHelper {
 		System.loadLibrary("pcap");
 	}
 
-	public static native int countPcapFile(String path) throws IOException;
+	public static native int countPcapFile(String path, int max) throws IOException;
 	
 }
