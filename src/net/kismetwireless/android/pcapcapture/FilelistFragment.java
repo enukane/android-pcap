@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ListFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -34,6 +36,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class FilelistFragment extends ListFragment {
 	private static String LOGTAG = "filelist-fragment";
@@ -91,6 +94,8 @@ public class FilelistFragment extends ListFragment {
 	}
 
 	public void Populate() {
+		mTimeHandler.removeCallbacks(updateTask);
+		
 		ArrayList<FileEntry> al = new ArrayList<FileEntry>();
 
 		for (String fn : mDirectory.list()) {
@@ -327,7 +332,8 @@ public class FilelistFragment extends ListFragment {
 								new View.OnClickListener() {
 								@Override
 								public void onClick(View v) {
-									
+									deleteFileDialog(mitem.getFile());
+									popupWindow.dismiss();
 								}
 							}),
 					};
@@ -371,6 +377,29 @@ public class FilelistFragment extends ListFragment {
 		}
 	}
 	
+	public void deleteFileDialog(final File f) {
+		AlertDialog.Builder alertbox = new AlertDialog.Builder(getActivity());
+
+		alertbox.setTitle("Delete file?");
+
+		String msg = "Delete file '" + f.getName() + "'?  This can not be undone.";
+
+		alertbox.setMessage(msg);
+
+		alertbox.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+			}
+		});
+
+		alertbox.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+				f.delete();
+				Populate();
+			}
+		});
+
+		alertbox.show();
+	}
 
 
 	public static abstract class FileTyper {

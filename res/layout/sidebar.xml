@@ -9,6 +9,15 @@
         android:background="@color/sidebar"
         android:orientation="vertical" >
 
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="0"
+            android:text="@string/fileusage"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
         <fragment
             android:id="@+id/fragment_fileusage"
             android:name="net.kismetwireless.android.pcapcapture.FileusageFragment"
@@ -18,6 +27,16 @@
             android:layout_marginTop="15dp"
             android:layout_weight="0"
             tools:layout="@layout/fragment_fileusage" />
+
+        <Button
+            android:id="@+id/buttonManageFiles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginTop="8dp"
+            android:layout_weight="0"
+            android:text="Manage Files" />
+
     </LinearLayout>
 
     <FrameLayout

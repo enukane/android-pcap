@@ -3,6 +3,7 @@ package net.kismetwireless.android.pcapcapture;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import net.kismetwireless.android.pcapcapture.FilelistFragment.FileEntry;
 import android.app.ActionBar;
@@ -63,7 +64,7 @@ public class MainActivity extends Activity {
 	
 	private Sidebar mSidebar;
 
-	private String mLogPath = "";
+	private File mLogPath = new File("");
 	private boolean mLocalLogging = false, mLogging = false, mUsbPresent = false;
 	private int mLogCount = 0;
 	private long mLogSize = 0;
@@ -119,7 +120,7 @@ public class MainActivity extends Activity {
 					mLocalLogging = true;
 					mLogging = true;
 
-					mLogPath = b.getString(PcapService.BNDL_CMD_LOGFILE_STRING);
+					mLogPath = new File(b.getString(PcapService.BNDL_CMD_LOGFILE_STRING));
 					mLogCount = b.getInt(PcapService.BNDL_STATE_LOGFILE_PACKETS_INT, 0);
 					mLogSize = b.getLong(PcapService.BNDL_STATE_LOGFILE_SIZE_LONG, 0);
 				} else {
@@ -316,7 +317,7 @@ public class MainActivity extends Activity {
 			mTextDashFile.setText("Logging inactive");
 			mTextDashFileSmall.setText("");
 		} else {
-			mTextDashFile.setText(mLogPath);
+			mTextDashFile.setText(mLogPath.getName());
 		}
 
 		if (mLogCount > 0 || mLogging) {
@@ -488,8 +489,15 @@ public class MainActivity extends Activity {
 					doUpdateServiceLogs(null, false);
 				} else {
 					mLocalLogging = true;
-					mLogPath = "/mnt/sdcard/pcap/android.cap";
-					doUpdateServiceLogs(mLogPath, true);
+					// mLogPath = "/mnt/sdcard/pcap/android.cap";
+					
+					Date now = new Date();
+					String snow = now.toString();
+					snow = snow.replace(" ", "-");
+					snow = snow.replace(":", "-");
+					mLogPath = new File("/mnt/sdcard/pcap" + "/android-" + snow + ".cap");
+					
+					doUpdateServiceLogs(mLogPath.toString(), true);
 				}
 
 				doUpdateUi();
