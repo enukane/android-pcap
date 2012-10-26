@@ -36,7 +36,9 @@
         <LinearLayout
             android:id="@+id/layoutMaxSizeMenu"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true" >
 
             <TextView
                 android:id="@+id/textMaxSize"
@@ -50,9 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/popup_item" />
-
         </LinearLayout>
-
     </LinearLayout>
 
     <TextView

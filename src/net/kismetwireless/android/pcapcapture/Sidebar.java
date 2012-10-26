@@ -24,17 +24,12 @@
 
 package net.kismetwireless.android.pcapcapture;
 
+import java.io.File;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-
-import org.xmlpull.v1.XmlPullParser;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.XmlResourceParser;
 import android.graphics.Rect;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -44,14 +39,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.TranslateAnimation;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 public class Sidebar extends LinearLayout {
 	
@@ -171,6 +161,12 @@ public class Sidebar extends LinearLayout {
 		lays.setMargins(0, statusHeight, 0, 0);
 		menu.setLayoutParams(lays);
 		parent.addView(menu);
+		
+		FileusageFragment list = 
+			(FileusageFragment) act.getFragmentManager().findFragmentById(R.id.fragment_fileusage);
+		list.setDirectory(new File("/mnt/sdcard/pcap"));
+		list.setRefreshTimer(1000);
+		list.Populate();
 		
 		// slide menu in 
 		if(animate)

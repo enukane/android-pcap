@@ -144,13 +144,6 @@
             android:layout_marginTop="15dp"
             android:layout_weight="1" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical" >
-        </LinearLayout>
-
         <TableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
