@@ -9,6 +9,7 @@
     <string name="popup_share">Share</string>
     <string name="popup_delete">Delete</string>
     
+    <string name="fileusage"><u>Storage Usage</u></string>
     <string name="popup_size_50">50 MB</string>
     <string name="popup_size_100">100 MB</string>
     <string name="popup_size_250">250 MB</string>
