@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -39,6 +40,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -167,6 +169,17 @@ public class Sidebar extends LinearLayout {
 		list.setDirectory(new File("/mnt/sdcard/pcap"));
 		list.setRefreshTimer(1000);
 		list.Populate();
+		
+		Button button =
+			(Button) menu.findViewById(R.id.buttonManageFiles);
+		
+		button.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				act.startActivity(new Intent(act, FilemanagerActivity.class));
+				Sidebar.this.hide();
+			}
+		});
 		
 		// slide menu in 
 		if(animate)

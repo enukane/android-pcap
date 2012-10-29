@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
 	
 	private Sidebar mSidebar;
 
+	private String mLogDir;
 	private File mLogPath = new File("");
 	private boolean mLocalLogging = false, mLogging = false, mUsbPresent = false;
 	private int mLogCount = 0;
@@ -76,6 +77,8 @@ public class MainActivity extends Activity {
 	public static final String PREF_CHANNELHOP = "channel_hop";
 	public static final String PREF_CHANNEL = "channel_lock";
 	public static final String PREF_CHANPREFIX = "ch_";
+	
+	public static final String PREF_LOGDIR = "logdir";
 
 	private boolean mChannelHop;
 	private int mChannelLock;
@@ -195,6 +198,14 @@ public class MainActivity extends Activity {
 		mChannelHop = mPreferences.getBoolean(PREF_CHANNELHOP, true);
 		String chpref = mPreferences.getString(PREF_CHANNEL, "11");
 		mChannelLock = Integer.parseInt(chpref);
+	
+		if (!mPreferences.contains(PREF_CHANNEL)) {
+			SharedPreferences.Editor e = mPreferences.edit();
+			e.putString(PREF_CHANNEL, "/mnt/sdcard/pcap");
+			e.commit();
+		}
+		
+		mLogDir = mPreferences.getString(PREF_LOGDIR, "/mnt/sdcard/pcap");
 
 		mChannelList.clear();
 		for (int c = 1; c <= 11; c++) {
@@ -365,54 +376,6 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	public class PcapFileTyper extends FilelistFragment.FileTyper {
-		@Override
-		public FilelistFragment.FileEntry getEntry(File directory, String fn) {
-			/*
-			 * Fetching data is complex so we implement this as a runnable that happens
-			 * on demand
-			String pcapdetails = "No pcap data";
-			try {
-				pcapdetails = PcapHelper.countPcapFile(directory.toString() + "/" + fn) + " packets";
-			} catch (IOException e) {
-				pcapdetails = "Error: " + e;
-				Log.e(LOGTAG, "Pcap error: " + e);
-			}
-			*/
-			
-			FileEntry f = new FilelistFragment.FileEntry(directory, fn, 
-					R.drawable.icon_wireshark, fn, "Fetching Pcap data...", this);
-
-			return f;
-		}
-		
-		@Override
-		public void updateDetailsView(final TextView v, final FileEntry fe) {
-			v.post(new Runnable() {
-				public void run() {
-					String pcapdetails = "No pcap data";
-					int npackets = 0;
-					
-					try {
-						npackets = 
-							PcapHelper.countPcapFile(fe.getDirectory().toString() + "/" + fe.getFilename(), 50000);
-						if (npackets == 50000) {
-							pcapdetails = "50000+ packets";
-						} else {
-							pcapdetails = npackets + " packets";
-						}
-					} catch (IOException e) {
-						pcapdetails = "Error: " + e;
-						Log.e(LOGTAG, "Pcap error: " + e);
-					}
-				
-					fe.setSmallText(pcapdetails);
-					v.setText(pcapdetails);
-				}
-			});
-			
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -432,14 +395,6 @@ public class MainActivity extends Activity {
 		mContext = this;
 
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-
-		// make the directory on the sdcard
-		// TODO make this not hardcoded
-		File f = new File("/mnt/sdcard/pcap");
-
-		if (!f.exists()) {
-			f.mkdir();
-		}
 
 		setContentView(R.layout.activity_main);
 
@@ -465,17 +420,19 @@ public class MainActivity extends Activity {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		mContext.registerReceiver(mUsbReceiver, filter);
+		
+		doUpdatePrefs();
 
-		/*
-		FilelistFragment list = new FilelistFragment(new File("/mnt/sdcard/pcap"), 1000);
-		list.registerFiletype("cap", new PcapFileTyper());
-		list.setFavorites(true);
-		list.Populate();
-		getFragmentManager().beginTransaction().add(R.id.fragment_filelist, list).commit();
-		 */
+		// make the directory on the sdcard
+		File f = new File(mLogDir);
+
+		if (!f.exists()) {
+			f.mkdir();
+		}
+
 		FilelistFragment list = (FilelistFragment) getFragmentManager().findFragmentById(R.id.fragment_filelist);
 		list.registerFiletype("cap", new PcapFileTyper());
-		list.setDirectory(new File("/mnt/sdcard/pcap"));
+		list.setDirectory(new File(mLogDir));
 		list.setRefreshTimer(2000);
 		list.setFavorites(true);
 		list.Populate();
@@ -489,13 +446,12 @@ public class MainActivity extends Activity {
 					doUpdateServiceLogs(null, false);
 				} else {
 					mLocalLogging = true;
-					// mLogPath = "/mnt/sdcard/pcap/android.cap";
 					
 					Date now = new Date();
 					String snow = now.toString();
 					snow = snow.replace(" ", "-");
 					snow = snow.replace(":", "-");
-					mLogPath = new File("/mnt/sdcard/pcap" + "/android-" + snow + ".cap");
+					mLogPath = new File(mLogDir + "/android-" + snow + ".cap");
 					
 					doUpdateServiceLogs(mLogPath.toString(), true);
 				}
@@ -510,13 +466,11 @@ public class MainActivity extends Activity {
 		mSidebar = (Sidebar) findViewById(R.id.slideMenu);
 		mSidebar.init(this, 333);
 
-		Log.d(LOGTAG, "Pcap dir uses " + FileUtils.countFileSizes(new File("/mnt/sdcard/pcap"), 
+		Log.d(LOGTAG, "Pcap dir uses " + FileUtils.countFileSizes(new File(mLogDir), 
 				new String[] {"cap"}, false, false, null));
-		Log.d(LOGTAG, "Pcap dir favorites " + FileUtils.countFileSizes(new File("/mnt/sdcard/pcap"), 
+		Log.d(LOGTAG, "Pcap dir favorites " + FileUtils.countFileSizes(new File(mLogDir), 
 				new String[] {"cap"}, true, false, mPreferences));
 		
-		doUpdatePrefs();
-
 		doUpdateUi();
 	}
 

@@ -10,7 +10,7 @@ public class FileUtils {
 	public static String makeFavoriteKey(File directory, String fname) {
 		return "FILEFAV_" + directory.toString() + fname;
 	}
-
+	
 	/* Count file sizes.
 	 * Favorite = false && nonfavorite = false, count all files which match extensions
 	 * Otherwise count favorite or nonfavorite files for size.

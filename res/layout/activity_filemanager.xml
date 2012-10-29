@@ -48,7 +48,7 @@
                     android:layout_marginBottom="5dp"
                     android:layout_marginRight="5dp"
                     android:layout_weight="1"
-                    android:text="Delete Old" />
+                    android:text="Delete Oldest" />
 
                 <Button
                     android:id="@+id/button2"
@@ -58,7 +58,7 @@
                     android:layout_marginBottom="5dp"
                     android:layout_marginLeft="5dp"
                     android:layout_weight="1"
-                    android:text="Delete Non-Favorite" />
+                    android:text="Delete Unstarred" />
 
             </TableRow>
         </TableLayout>

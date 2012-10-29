@@ -4,6 +4,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">Pcap Capture</string>
+    <string name="title_activity_filemanager">File Manager</string>
     <string name="pcap_service_desc">Pcap background service</string>
     <string name="pref_channel">Channel Preferences</string>
     <string name="popup_share">Share</string>

@@ -35,6 +35,11 @@
             android:name=".ChannelPrefs"
             android:label="@string/pref_channel"
             android:theme="@style/AppTheme" />
+        
+        <activity
+            android:name=".FilemanagerActivity"
+            android:label="@string/title_activity_filemanager"
+            android:theme="@style/AppTheme" />
                     
         <service
             android:name=".PcapService"
