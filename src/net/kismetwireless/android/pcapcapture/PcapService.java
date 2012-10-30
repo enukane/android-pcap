@@ -111,8 +111,10 @@ public class PcapService extends Service {
 			case MSG_REGISTER_CLIENT:
 				c = msg.replyTo;
 
-				if (!mClientList.contains(c))
-					mClientList.add(c);
+				if (!mClientList.contains(c)) {
+					Log.d(LOGTAG, PcapService.this + " Adding client " + c);
+					PcapService.this.mClientList.add(c);
+				}
 
 				if (mLastUsbState != null)
 					sendStateBundle(mLastUsbState);
@@ -123,6 +125,7 @@ public class PcapService extends Service {
 			case MSG_UNREGISTER_CLIENT:
 				c = msg.replyTo;
 
+				Log.d(LOGTAG, "Removing client " + c);
 				if (mClientList.contains(c))
 					mClientList.remove(c);
 
@@ -194,7 +197,9 @@ public class PcapService extends Service {
 	}
 	
 	public void sendStateBundle(Bundle b) {
-		if (mLastUsbState != b)
+		Log.d("USBLOG", "Send state " + this + " clientlist size " + mClientList.size() + " bundle " + b);
+		
+		if (mLastUsbState == null || (mLastUsbState != null && !mLastUsbState.equals(b)))
 			mLastUsbState = new Bundle(b);
 		
 		for (Messenger m : mClientList) {
@@ -257,7 +262,7 @@ public class PcapService extends Service {
 				public void handleMessage(Message msg) {
 					Log.d("USBLOG", "Replicating service message " + (Bundle) msg.getData());
 					// Toast.makeText(mContext, "Replicating service message", Toast.LENGTH_SHORT).show();
-					sendStateBundle(msg.getData());
+					PcapService.this.sendStateBundle(msg.getData());
 				}
 
 			};		

@@ -93,6 +93,8 @@ public class MainActivity extends Activity {
 			switch (msg.what) {
 			case PcapService.MSG_RADIOSTATE:
 				b = msg.getData();
+				
+				Log.d(LOGTAG, "Got radio state: " + b);
 
 				if (b == null)
 					break;
@@ -264,6 +266,8 @@ public class MainActivity extends Activity {
 					// Do nothing
 				}
 			}
+			
+			mIsBound = false;
 		}
 	}
 
@@ -318,10 +322,15 @@ public class MainActivity extends Activity {
 			mTextDashUsb.setText("No USB device present");
 			mTextDashUsbSmall.setVisibility(0);
 			mTextDashUsbSmall.setText("");
+			
+			mTextDashLogControl.setText("No USB NIC plugged in");
+			mImageControl.setImageResource(R.drawable.alert_warning);
+			mRowLogControl.setClickable(false);
 		} else {
 			mTextDashUsb.setText(mUsbType);
 			mTextDashUsbSmall.setText(mUsbInfo);
 			mTextDashUsbSmall.setVisibility(1);
+			mRowLogControl.setClickable(true);
 		}
 
 		if (!mLogging) {
@@ -347,10 +356,10 @@ public class MainActivity extends Activity {
 			mTextDashFileSmall.setText("");
 		}
 
-		if (!mLocalLogging) {
+		if (!mLocalLogging && mUsbPresent) {
 			mTextDashLogControl.setText("Start logging");
 			mImageControl.setImageResource(R.drawable.ic_action_record);
-		} else {
+		} else if (mLocalLogging) {
 			mTextDashLogControl.setText("Stop logging");
 			mImageControl.setImageResource(R.drawable.ic_action_stop);
 		}
@@ -479,6 +488,14 @@ public class MainActivity extends Activity {
 		// Replicate USB intents that come in on the single-top task
 		mUsbReceiver.onReceive(this, intent);
 	}
+	
+	@Override
+	public void onStop() {
+		super.onStop();
+		
+		mContext.unregisterReceiver(mUsbReceiver);
+		doUnbindService();
+	}
 
 	@Override
 	public void onDestroy() {
@@ -492,15 +509,17 @@ public class MainActivity extends Activity {
 	@Override 
 	public void onPause() {
 		super.onPause();
-		
-		doUnbindService();
+	
+		// Log.d(LOGTAG, "Onpause");
+		// doUnbindService();
 	}
 	
 	@Override
 	public void onResume() {
 		super.onResume();
-		
-		doBindService();
+	
+		// Log.d(LOGTAG, "Onresume");
+		// doBindService();
 	}
 
 	@Override
@@ -529,42 +548,5 @@ public class MainActivity extends Activity {
 			doUpdateServiceprefs();
 		}
 
-	}
-
-
-	private void shareFile() {
-		Intent i = new Intent(Intent.ACTION_SEND); 
-		i.setType("application/cap"); 
-		// i.setType("application/binary");
-		i.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + mLogPath)); 
-		startActivity(Intent.createChooser(i, "Share Pcap"));
-	}
-
-	public void shareFileDialog() {
-		if (mLocalLogging) {
-			AlertDialog.Builder alertbox = new AlertDialog.Builder(mContext);
-
-			alertbox.setTitle("Pcap in progress");
-
-			alertbox.setMessage("Pcap currently in progress.  While you may share " +
-					"the file in progress, it may not include the most recently " +
-			"captured packets.");
-
-			alertbox.setNegativeButton("Don't Share", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface arg0, int arg1) {
-
-				}
-			});
-
-			alertbox.setPositiveButton("Share", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface arg0, int arg1) {
-					shareFile();
-				}
-			});
-
-			alertbox.show();
-		} else {
-			shareFile();
-		}
 	}
 }
