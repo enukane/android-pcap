@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
 	PendingIntent mPermissionIntent;
 	UsbManager mUsbManager;
 	Context mContext;
-
+	
 	SharedPreferences mPreferences;
 
 	Messenger mService = null;
@@ -58,9 +58,9 @@ public class MainActivity extends Activity {
 
 	private TextView mTextDashUsb, mTextDashUsbSmall, mTextDashFile, 
 		mTextDashFileSmall, mTextDashLogControl, mTextDashChanhop,
-		mTextDashChanhopSmall;
-	private TableRow mRowLogControl;
-	private ImageView mImageControl;
+		mTextDashChanhopSmall, mTextManageSmall;
+	private TableRow mRowLogControl, mRowLogShare, mRowManage;
+	private ImageView mImageControl, mImageShare;
 	
 	private Sidebar mSidebar;
 
@@ -106,6 +106,10 @@ public class MainActivity extends Activity {
 					mUsbInfo = b.getString(UsbSource.BNDL_RADIOINFO_STRING, "No info available");
 					mLastChannel = b.getInt(UsbSource.BNDL_RADIOCHANNEL_INT, 0);
 				} else {
+					// Turn off logging
+					if (mUsbPresent) 
+						doUpdateServiceLogs(mLogPath.toString(), false);
+					
 					mUsbPresent = false;
 					mUsbType = "";
 					mUsbInfo = "";
@@ -149,6 +153,8 @@ public class MainActivity extends Activity {
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
+			Log.d(LOGTAG, "mconnection connected");
+			
 			mService = new Messenger(service);
 
 			try {
@@ -172,8 +178,12 @@ public class MainActivity extends Activity {
 	};
 
 	void doBindService() {
-		if (mIsBound)
+		Log.d(LOGTAG, "binding service");
+		
+		if (mIsBound) {
+			Log.d(LOGTAG, "already bound");
 			return;
+		}
 
 		bindService(new Intent(MainActivity.this, PcapService.class), mConnection, Context.BIND_AUTO_CREATE);
 		mIsBound = true;
@@ -201,9 +211,9 @@ public class MainActivity extends Activity {
 		String chpref = mPreferences.getString(PREF_CHANNEL, "11");
 		mChannelLock = Integer.parseInt(chpref);
 	
-		if (!mPreferences.contains(PREF_CHANNEL)) {
+		if (!mPreferences.contains(PREF_LOGDIR)) {
 			SharedPreferences.Editor e = mPreferences.edit();
-			e.putString(PREF_CHANNEL, "/mnt/sdcard/pcap");
+			e.putString(PREF_LOGDIR, "/mnt/sdcard/pcap");
 			e.commit();
 		}
 		
@@ -266,9 +276,10 @@ public class MainActivity extends Activity {
 					// Do nothing
 				}
 			}
-			
-			mIsBound = false;
 		}
+	
+		mService = null;
+		mIsBound = false;
 	}
 
 	void doSendDeferredIntent(deferredUsbIntent i) {
@@ -320,7 +331,7 @@ public class MainActivity extends Activity {
 	private void doUpdateUi() {
 		if (!mUsbPresent) {
 			mTextDashUsb.setText("No USB device present");
-			mTextDashUsbSmall.setVisibility(0);
+			mTextDashUsbSmall.setVisibility(View.GONE);
 			mTextDashUsbSmall.setText("");
 			
 			mTextDashLogControl.setText("No USB NIC plugged in");
@@ -329,15 +340,21 @@ public class MainActivity extends Activity {
 		} else {
 			mTextDashUsb.setText(mUsbType);
 			mTextDashUsbSmall.setText(mUsbInfo);
-			mTextDashUsbSmall.setVisibility(1);
+			mTextDashUsbSmall.setVisibility(View.VISIBLE);
 			mRowLogControl.setClickable(true);
 		}
 
 		if (!mLogging) {
 			mTextDashFile.setText("Logging inactive");
 			mTextDashFileSmall.setText("");
+			mTextDashFileSmall.setVisibility(View.GONE);
+			mRowLogShare.setClickable(false);
+			mImageShare.setVisibility(View.INVISIBLE);
 		} else {
 			mTextDashFile.setText(mLogPath.getName());
+			mTextDashFileSmall.setVisibility(View.VISIBLE);
+			mRowLogShare.setClickable(true);
+			mImageShare.setVisibility(View.VISIBLE);
 		}
 
 		if (mLogCount > 0 || mLogging) {
@@ -383,6 +400,8 @@ public class MainActivity extends Activity {
 			mTextDashChanhop.setText("Channel hopping disabled");
 			mTextDashChanhopSmall.setText("Locked to channel " + mChannelLock);
 		}
+		
+		doUpdateFilesizes();
 	}
 
 
@@ -414,10 +433,14 @@ public class MainActivity extends Activity {
 		mTextDashLogControl = (TextView) findViewById(R.id.textDashCaptureControl);
 		mTextDashChanhop = (TextView) findViewById(R.id.textChannelHop);
 		mTextDashChanhopSmall = (TextView) findViewById(R.id.textChannelHopSmall);
+		mTextManageSmall = (TextView) findViewById(R.id.textManageSmall);
 
 		mRowLogControl = (TableRow) findViewById(R.id.tableRowLogControl);
+		mRowLogShare = (TableRow) findViewById(R.id.tableRowFile);
+		mRowManage = (TableRow) findViewById(R.id.tableRowManage);
 
 		mImageControl = (ImageView) findViewById(R.id.imageDashLogControl);
+		mImageShare = (ImageView) findViewById(R.id.imageShare);
 
 		Intent svc = new Intent(this, PcapService.class);
 		startService(svc);
@@ -439,12 +462,14 @@ public class MainActivity extends Activity {
 			f.mkdir();
 		}
 
+		/*
 		FilelistFragment list = (FilelistFragment) getFragmentManager().findFragmentById(R.id.fragment_filelist);
 		list.registerFiletype("cap", new PcapFileTyper());
 		list.setDirectory(new File(mLogDir));
 		list.setRefreshTimer(2000);
 		list.setFavorites(true);
 		list.Populate();
+		*/
 		// getFragmentManager().beginTransaction().add(R.id.fragment_filelist, list).commit();
 
 		mRowLogControl.setOnClickListener(new View.OnClickListener() {
@@ -468,18 +493,15 @@ public class MainActivity extends Activity {
 				doUpdateUi();
 			}
 		});
-
-		ActionBar bar = getActionBar();
-		bar.setDisplayHomeAsUpEnabled(true);
-
-		mSidebar = (Sidebar) findViewById(R.id.slideMenu);
-		mSidebar.init(this, 333);
-
-		Log.d(LOGTAG, "Pcap dir uses " + FileUtils.countFileSizes(new File(mLogDir), 
-				new String[] {"cap"}, false, false, null));
-		Log.d(LOGTAG, "Pcap dir favorites " + FileUtils.countFileSizes(new File(mLogDir), 
-				new String[] {"cap"}, true, false, mPreferences));
 		
+		mRowManage.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(mContext, FilemanagerActivity.class);
+				startActivity(i);
+			}
+		});
+
 		doUpdateUi();
 	}
 
@@ -492,9 +514,6 @@ public class MainActivity extends Activity {
 	@Override
 	public void onStop() {
 		super.onStop();
-		
-		mContext.unregisterReceiver(mUsbReceiver);
-		doUnbindService();
 	}
 
 	@Override
@@ -502,7 +521,6 @@ public class MainActivity extends Activity {
 		super.onDestroy();
 
 		mContext.unregisterReceiver(mUsbReceiver);
-
 		doUnbindService();
 	}
 	
@@ -549,4 +567,26 @@ public class MainActivity extends Activity {
 		}
 
 	}
+
+	protected void doUpdateFilesizes() {
+		long ds = FileUtils.countFileSizes(new File(mLogDir), new String[] { "cap" }, 
+				false, false, null);
+		long nf = FileUtils.countFiles(new File(mLogDir), new String[] { "cap" }, 
+				false, false, null);
+		String textuse = "";
+
+		if (ds < 1024) {
+			textuse = (Long.toString(ds) + "B");
+		} else if (ds < (1024 * 1024)) {
+			textuse = (Long.toString(ds / 1024) + "K");
+		} else if (ds < (1024 * 1024 * 1024)) {
+			textuse = (Long.toString(ds / (1024 * 1024)) + "MB");
+		} else {
+			textuse = (Long.toString(ds / (1024 * 1024 * 1024)) + "GB");
+		}
+
+
+		mTextManageSmall.setText("Using " + textuse + " in " + nf + " logs");
+	}
+
 }

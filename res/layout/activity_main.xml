@@ -27,7 +27,8 @@
             <TableRow
                 android:id="@+id/tableRow1"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp" >
 
                 <ImageView
                     android:id="@+id/imageView1"
@@ -57,44 +58,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text=" " />
-                </LinearLayout>
-            </TableRow>
+                        android:text="Small"
+                        android:visibility="gone" />
 
-            <TableRow
-                android:id="@+id/tableRow2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" >
-
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginRight="15dp"
-                    android:src="@android:drawable/stat_notify_sdcard" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical" >
-
-                    <TextView
-                        android:id="@+id/textDashFile"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="File path"
-                        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                    <TextView
-                        android:id="@+id/textDashFileSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Logged XYZ packets, 1024Kb" />
                 </LinearLayout>
             </TableRow>
 
@@ -102,7 +68,7 @@
                 android:id="@+id/tableRow3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" >
+                android:layout_marginBottom="10dp" >
 
                 <ImageView
                     android:id="@+id/imageView4"
@@ -133,16 +99,64 @@
                         android:text="Channels 1,2,3,4,5,6" />
                 </LinearLayout>
             </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRowFile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true" >
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="15dp"
+                    android:src="@android:drawable/stat_notify_sdcard" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/textDashFile"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="File path"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/textDashFileSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Logged XYZ packets, 1024Kb" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/imageShare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_menu_share"
+                    android:visibility="invisible" />
+
+            </TableRow>
+
         </TableLayout>
 
-        <fragment
-            android:id="@+id/fragment_filelist"
-            android:name="net.kismetwireless.android.pcapcapture.FilelistFragment"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:layout_marginTop="15dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:orientation="vertical" >
+
+        </LinearLayout>
 
         <TableLayout
             android:layout_width="match_parent"
@@ -151,11 +165,54 @@
             android:layout_marginBottom="15dp" >
 
             <TableRow
+                android:id="@+id/tableRowManage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true" >
+
+                <ImageView
+                    android:id="@+id/imageView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="14dp"
+                    android:src="@drawable/device_storage" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/textManage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Manage Files..."
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/textManageSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Small Text"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/imageView5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/navigation_next_item" />
+            </TableRow>
+
+            <TableRow
                 android:id="@+id/tableRowLogControl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true" 
-                android:background="?android:attr/selectableItemBackground" >
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true" >
 
                 <ImageView
                     android:id="@+id/imageDashLogControl"
@@ -172,6 +229,7 @@
                     android:text="Start logging"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
             </TableRow>
+
         </TableLayout>
     </LinearLayout>
 

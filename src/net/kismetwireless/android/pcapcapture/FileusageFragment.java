@@ -32,19 +32,19 @@ import android.widget.Toast;
 public class FileusageFragment extends Fragment {
 	private static String LOGTAG = "fileusage-fragment";
 
-	private static String PREF_MAXFILE_INT = "maxfilestorage";
+	// private static String PREF_MAXFILE_INT = "maxfilestorage";
 	
 	private File mDirectory;
 	private int mTimeout;
 	private Handler mTimeHandler = new Handler();
-	private SharedPreferences mPreferences;
+	// private SharedPreferences mPreferences;
 
-	private TextView mTextUse, mTextMax, mTextPath;
-	private View mLayoutMenu;
+	private TextView mTextUse, mTextPath;
+	// private View mLayoutMenu;
 
-	private ImageView mImagePopup;
+	// private ImageView mImagePopup;
 
-	private PopupMenu mSizePopup;
+	// private PopupMenu mSizePopup;
 	private long mDirectorySize;
 
 	private View mView;
@@ -92,7 +92,8 @@ public class FileusageFragment extends Fragment {
 		if (mTimeout > 0) 
 			mTimeHandler.postDelayed(updateTask, mTimeout);
 	}
-	
+
+	/*
 	private void updateMaxView() {
 		int max = mPreferences.getInt(PREF_MAXFILE_INT, 4);
 		
@@ -114,6 +115,7 @@ public class FileusageFragment extends Fragment {
 			break;
 		}
 	}
+	*/
 	
 	private void updateSizeView() {
 		if (mTextUse == null)
@@ -134,20 +136,21 @@ public class FileusageFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
 
-		mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		// mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		
 		if (mView == null) 
 			mView = inflater.inflate(R.layout.fragment_fileusage, container, false);
 
 		mTextUse = (TextView) mView.findViewById(R.id.textFileUse);
-		mTextMax = (TextView) mView.findViewById(R.id.textMaxSize);
+		// mTextMax = (TextView) mView.findViewById(R.id.textMaxSize);
 		mTextPath = (TextView) mView.findViewById(R.id.textPath);
 
-		mImagePopup = (ImageView) mView.findViewById(R.id.imagePopup);
+		// mImagePopup = (ImageView) mView.findViewById(R.id.imagePopup);
 		
 		if (mDirectory != null)
 			mTextPath.setText(mDirectory.toString());
 
+		/* 
 		mLayoutMenu = mView.findViewById(R.id.layoutMaxSizeMenu);
 		mLayoutMenu.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -192,6 +195,7 @@ public class FileusageFragment extends Fragment {
 		});
 		
 		updateMaxView();
+		*/
 
 		return mView;
 	}

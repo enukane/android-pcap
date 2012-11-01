@@ -19,6 +19,7 @@ import java.util.TreeMap;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.app.ListFragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,7 +37,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class FilelistFragment extends ListFragment {
 	private static String LOGTAG = "filelist-fragment";
@@ -48,6 +48,10 @@ public class FilelistFragment extends ListFragment {
 	private FileArrayAdapter mFileAdapter;
 	private boolean mFavorites = false;
 	private SharedPreferences mPreferences;
+	
+	public static final int RENAME_DIALOG_ID = 1001;
+	
+	private NameListener mNameListener = new NameListener();
 
 	private Runnable updateTask = new Runnable() {
 		@Override
@@ -151,7 +155,7 @@ public class FilelistFragment extends ListFragment {
 		File mFile;
 		FileTyper mFileTyper;
 		long mLastModified;
-		boolean mDirty = false;
+		boolean mDirty;
 
 		public FileEntry(File directory, String fname, int iconid, String text, String small,
 				FileTyper typer) {
@@ -164,6 +168,7 @@ public class FilelistFragment extends ListFragment {
 			this.mFile = new File(directory + "/" + fname);
 			
 			this.mLastModified = this.mFile.lastModified();
+			this.mDirty = true;
 		}
 	
 		@Override
@@ -179,6 +184,8 @@ public class FilelistFragment extends ListFragment {
 		public boolean getDirty() {
 			boolean d = mDirty;
 			mDirty = false;
+		
+			// Log.d("FILEDIRTY", "File " + mFname + " " + d);
 			
 			return d;
 		}
@@ -222,6 +229,11 @@ public class FilelistFragment extends ListFragment {
 		
 		public void setSmallText(String t) {
 			mSmalltext = t;
+		}
+		
+		public void setDirty() {
+			mDirty = true;
+			mLastModified = 0;
 		}
 	}
 
@@ -328,6 +340,23 @@ public class FilelistFragment extends ListFragment {
 									popupWindow.dismiss();
 								}
 							}),
+							new PopupMenuAdapter.PopupMenuItem(R.drawable.ic_menu_rename, R.string.popup_rename, 
+								new View.OnClickListener() {
+								@Override
+								public void onClick(View v) {
+									// deleteFileDialog(mitem.getFile());
+									
+									int pos = mitem.getFilename().lastIndexOf('.');
+									String base = mitem.getFilename().substring(0, pos);
+			
+									DialogFragment dialog = 
+										NameDialog.newInstance((Activity) mContext, mNameListener, mitem);
+									dialog.show(((Activity) mContext).getFragmentManager(), 
+											"NameDialog");
+									
+									popupWindow.dismiss();
+								}
+							}),
 							new PopupMenuAdapter.PopupMenuItem(R.drawable.ic_menu_delete, R.string.popup_delete, 
 								new View.OnClickListener() {
 								@Override
@@ -408,6 +437,33 @@ public class FilelistFragment extends ListFragment {
 		// Perform a long/complex update of the details, this should be done as a runnable
 		// posting to the view
 		public abstract void updateDetailsView(final TextView v, final FileEntry fe); 
+	}
+	
+	public class NameListener implements DialogListener {	
+		@Override
+		public void onDialogPositiveClick(DialogFragment dialog, int id) {
+			NameDialog nd = (NameDialog) dialog;
+			FileEntry f = nd.getFileEntry();
+			String nn = nd.getNameString();
+			
+			// mFileList.remove(f);
+			
+			f.getFile().renameTo(new File(f.getDirectory() + "/" + nn + ".cap"));
+			f.setDirty();
+			
+			Populate();
+		}
+
+		@Override
+		public void onDialogNegativeClick(DialogFragment dialog, int id) {
+			
+		}
+
+		@Override
+		public void onDialogNeutralClick(DialogFragment dialog, int id) {
+			
+		}
+		
 	}
 
 }

@@ -7,8 +7,10 @@
     <string name="title_activity_filemanager">File Manager</string>
     <string name="pcap_service_desc">Pcap background service</string>
     <string name="pref_channel">Channel Preferences</string>
+    
     <string name="popup_share">Share</string>
     <string name="popup_delete">Delete</string>
+    <string name="popup_rename">Rename</string>
     
     <string name="fileusage"><u>Storage Usage</u></string>
     <string name="popup_size_50">50 MB</string>
