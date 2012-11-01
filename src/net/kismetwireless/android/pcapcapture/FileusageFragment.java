@@ -121,15 +121,7 @@ public class FileusageFragment extends Fragment {
 		if (mTextUse == null)
 			return;
 		
-		if (mDirectorySize < 1024) {
-			mTextUse.setText(Long.toString(mDirectorySize) + "B");
-		} else if (mDirectorySize < (1024 * 1024)) {
-			mTextUse.setText(Long.toString(mDirectorySize / 1024) + "K");
-		} else if (mDirectorySize < (1024 * 1024 * 1024)) {
-			mTextUse.setText(Long.toString(mDirectorySize / (1024 * 1024)) + "MB");
-		} else {
-			mTextUse.setText(Long.toString(mDirectorySize / (1024 * 1024 * 1024)) + "GB");
-		}
+		mTextUse.setText(FileUtils.humanSize(mDirectorySize));
 	}
 
 	@Override

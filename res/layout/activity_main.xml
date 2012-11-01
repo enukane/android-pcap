@@ -6,11 +6,6 @@
     android:gravity="start"
     android:orientation="vertical" >
 
-    <net.kismetwireless.android.pcapcapture.Sidebar
-        android:id="@+id/slideMenu"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <LinearLayout
         android:id="@+id/LinearLayout1"
         android:layout_width="match_parent"

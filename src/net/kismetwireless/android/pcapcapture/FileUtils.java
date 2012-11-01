@@ -11,6 +11,23 @@ public class FileUtils {
 		return "FILEFAV_" + directory.toString() + fname;
 	}
 	
+	/* Convert a size to human values */
+	public static String humanSize(Long ds) {
+		String textuse = "";
+
+		if (ds < 1024) {
+			textuse = (Long.toString(ds) + "B");
+		} else if (ds < (1024 * 1024)) {
+			textuse = (Long.toString(ds / 1024) + "K");
+		} else if (ds < (1024 * 1024 * 1024)) {
+			textuse = (Long.toString(ds / (1024 * 1024)) + "MB");
+		} else {
+			textuse = (Long.toString(ds / (1024 * 1024 * 1024)) + "GB");
+		}
+		
+		return textuse;
+	}
+	
 	/* Count # of files
 	 * Favorite = false && nonfavorite = false, count all files which match extensions
 	 * Otherwise count favorite or nonfavorite files.

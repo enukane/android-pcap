@@ -64,6 +64,8 @@ public class MainActivity extends Activity {
 	
 	private String mLogDir;
 	private File mLogPath = new File("");
+	private File mOldLogPath;
+	private boolean mShareOnStop = false;
 	private boolean mLocalLogging = false, mLogging = false, mUsbPresent = false;
 	private int mLogCount = 0;
 	private long mLogSize = 0;
@@ -133,6 +135,14 @@ public class MainActivity extends Activity {
 				} else {
 					mLocalLogging = false;
 					mLogging = false;
+					
+					if (mShareOnStop) {
+						Intent i = new Intent(Intent.ACTION_SEND); 
+						i.setType("application/cap"); 
+						i.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + mOldLogPath)); 
+						startActivity(Intent.createChooser(i, "Share Pcap file"));
+						mShareOnStop = false;
+					}
 				}
 
 				updateUi = true;
@@ -499,6 +509,13 @@ public class MainActivity extends Activity {
 				startActivity(i);
 			}
 		});
+		
+		mRowLogShare.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				doShareCurrent();
+			}
+		});
 
 		doUpdateUi();
 	}
@@ -568,20 +585,47 @@ public class MainActivity extends Activity {
 				false, false, null);
 		long nf = FileUtils.countFiles(new File(mLogDir), new String[] { "cap" }, 
 				false, false, null);
-		String textuse = "";
-
-		if (ds < 1024) {
-			textuse = (Long.toString(ds) + "B");
-		} else if (ds < (1024 * 1024)) {
-			textuse = (Long.toString(ds / 1024) + "K");
-		} else if (ds < (1024 * 1024 * 1024)) {
-			textuse = (Long.toString(ds / (1024 * 1024)) + "MB");
-		} else {
-			textuse = (Long.toString(ds / (1024 * 1024 * 1024)) + "GB");
-		}
-
+		
+		String textuse = FileUtils.humanSize(ds);
 
 		mTextManageSmall.setText("Using " + textuse + " in " + nf + " logs");
+	}
+	
+	protected void doShareCurrent() {
+		AlertDialog.Builder alertbox = new AlertDialog.Builder(mContext);
+
+		alertbox.setTitle("Share current pcap?");
+
+		alertbox.setMessage("Sharing the active log can result in truncated log files.  This " +
+				"should not cause a problem with most log processors, but for maximum safety, " +
+				"you should stop logging first.");
+
+		alertbox.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+			}
+		});
+
+		alertbox.setPositiveButton("Share", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+				Intent i = new Intent(Intent.ACTION_SEND); 
+				i.setType("application/cap"); 
+				i.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + mLogPath)); 
+				startActivity(Intent.createChooser(i, "Share Pcap file"));
+			}
+		});
+		
+		alertbox.setNeutralButton("Stop and Share", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+				mShareOnStop = true;
+				mOldLogPath = mLogPath;
+				doUpdateServiceLogs(mLogPath.toString(), false);
+			}
+		});
+
+		alertbox.show();
+
+		/*
+		*/
 	}
 
 }

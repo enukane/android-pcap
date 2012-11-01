@@ -47,9 +47,12 @@ public class PcapFileTyper extends FilelistFragment.FileTyper {
 					pcapdetails = "Error: " + e.getMessage();
 					// Log.e(LOGTAG, "Pcap error: " + e);
 				}
-			
-				fe.setSmallText(pcapdetails);
-				v.setText(pcapdetails);
+				
+				String fd = 
+					FileUtils.humanSize(fe.getFile().length()) + ", " + pcapdetails;
+				
+				fe.setSmallText(fd);
+				v.setText(fd);
 			}
 		});
 		
