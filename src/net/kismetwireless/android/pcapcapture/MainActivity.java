@@ -62,8 +62,6 @@ public class MainActivity extends Activity {
 	private TableRow mRowLogControl, mRowLogShare, mRowManage;
 	private ImageView mImageControl, mImageShare;
 	
-	private Sidebar mSidebar;
-
 	private String mLogDir;
 	private File mLogPath = new File("");
 	private boolean mLocalLogging = false, mLogging = false, mUsbPresent = false;
