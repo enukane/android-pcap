@@ -40,6 +40,8 @@ JNIEXPORT jboolean JNICALL Java_net_kismetwireless_android_pcapcapture_PcapLogge
 
 	char buf[1024];
 
+	uint16_t ppi_len;
+
 	// Find the pcaplogger class (this)
 	class_pcaplogger = (*env)->FindClass(env, "net/kismetwireless/android/pcapcapture/PcapLogger");
 	if (class_pcaplogger == NULL)

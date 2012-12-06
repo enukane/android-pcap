@@ -1,4 +1,4 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
@@ -7,40 +7,40 @@
     android:orientation="vertical" >
 
     <LinearLayout
-        android:id="@+id/LinearLayout1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="start"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:layout_weight="0.0" >
 
         <fragment
             android:id="@+id/fragment_fileusage"
             android:name="net.kismetwireless.android.pcapcapture.FileusageFragment"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:layout_marginTop="10dp"
+            android:layout_weight="0.75"
             tools:layout="@layout/fragment_fileusage" />
-
-        <fragment
-            android:id="@+id/fragment_filelist"
-            android:name="net.kismetwireless.android.pcapcapture.FilelistFragment"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="15dp"
-            android:layout_marginTop="5dp"
-            android:layout_weight="1"
-            tools:layout="@layout/fragment_filelist_row" />
 
         <Button
             android:id="@+id/buttonDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginBottom="5dp"
             android:layout_marginLeft="5dp"
-            android:layout_weight="0"
+            android:layout_weight="0.25"
             android:text="Delete Unstarred" />
 
     </LinearLayout>
 
-</RelativeLayout>
+    <fragment
+        android:id="@+id/fragment_filelist"
+        android:name="net.kismetwireless.android.pcapcapture.FilelistFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_weight="1.0"
+        tools:layout="@layout/fragment_filelist_row" />
+
+</LinearLayout>

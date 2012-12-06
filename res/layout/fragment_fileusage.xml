@@ -14,7 +14,7 @@
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Currently using "
+            android:text="Using "
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
@@ -30,7 +30,7 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Logs are stored in"
+        android:text="Logs stored in"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView

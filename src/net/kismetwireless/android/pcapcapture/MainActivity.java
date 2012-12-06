@@ -1,12 +1,9 @@
 package net.kismetwireless.android.pcapcapture;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import net.kismetwireless.android.pcapcapture.FilelistFragment.FileEntry;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -21,6 +18,7 @@ import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -32,6 +30,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
 	PendingIntent mPermissionIntent;
 	UsbManager mUsbManager;
 	Context mContext;
-	
+
 	SharedPreferences mPreferences;
 
 	Messenger mService = null;
@@ -57,11 +57,11 @@ public class MainActivity extends Activity {
 	ArrayList<deferredUsbIntent> mDeferredIntents = new ArrayList<deferredUsbIntent>();
 
 	private TextView mTextDashUsb, mTextDashUsbSmall, mTextDashFile, 
-		mTextDashFileSmall, mTextDashLogControl, mTextDashChanhop,
-		mTextDashChanhopSmall, mTextManageSmall;
-	private TableRow mRowLogControl, mRowLogShare, mRowManage;
-	private ImageView mImageControl, mImageShare;
-	
+	mTextDashFileSmall, mTextDashLogControl, mTextDashChanhop,
+	mTextDashChanhopSmall, mTextManageSmall, mTextDashHardware;
+	private TableRow mRowLogControl, mRowLogShare, mRowManage, mRowHardware, mRowHop;
+	private ImageView mImageControl, mImageShare, mImageHardware;
+
 	private String mLogDir;
 	private File mLogPath = new File("");
 	private File mOldLogPath;
@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
 	public static final String PREF_CHANNELHOP = "channel_hop";
 	public static final String PREF_CHANNEL = "channel_lock";
 	public static final String PREF_CHANPREFIX = "ch_";
-	
+
 	public static final String PREF_LOGDIR = "logdir";
 
 	private boolean mChannelHop;
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
 			switch (msg.what) {
 			case PcapService.MSG_RADIOSTATE:
 				b = msg.getData();
-				
+
 				Log.d(LOGTAG, "Got radio state: " + b);
 
 				if (b == null)
@@ -109,7 +109,7 @@ public class MainActivity extends Activity {
 					// Turn off logging
 					if (mUsbPresent) 
 						doUpdateServiceLogs(mLogPath.toString(), false);
-					
+
 					mUsbPresent = false;
 					mUsbType = "";
 					mUsbInfo = "";
@@ -135,7 +135,7 @@ public class MainActivity extends Activity {
 				} else {
 					mLocalLogging = false;
 					mLogging = false;
-					
+
 					if (mShareOnStop) {
 						Intent i = new Intent(Intent.ACTION_SEND); 
 						i.setType("application/cap"); 
@@ -162,7 +162,7 @@ public class MainActivity extends Activity {
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
 			Log.d(LOGTAG, "mconnection connected");
-			
+
 			mService = new Messenger(service);
 
 			try {
@@ -187,7 +187,7 @@ public class MainActivity extends Activity {
 
 	void doBindService() {
 		Log.d(LOGTAG, "binding service");
-		
+
 		if (mIsBound) {
 			Log.d(LOGTAG, "already bound");
 			return;
@@ -218,18 +218,18 @@ public class MainActivity extends Activity {
 		mChannelHop = mPreferences.getBoolean(PREF_CHANNELHOP, true);
 		String chpref = mPreferences.getString(PREF_CHANNEL, "11");
 		mChannelLock = Integer.parseInt(chpref);
-	
+
 		if (!mPreferences.contains(PREF_LOGDIR)) {
 			SharedPreferences.Editor e = mPreferences.edit();
 			e.putString(PREF_LOGDIR, "/mnt/sdcard/pcap");
 			e.commit();
 		}
-		
+
 		mLogDir = mPreferences.getString(PREF_LOGDIR, "/mnt/sdcard/pcap");
 
 		mChannelList.clear();
 		for (int c = 1; c <= 11; c++) {
-			if (mPreferences.getBoolean(PREF_CHANPREFIX + Integer.toString(c), false)) {
+			if (mPreferences.getBoolean(PREF_CHANPREFIX + Integer.toString(c), true)) {
 				mChannelList.add(c);
 			}
 		}
@@ -285,7 +285,7 @@ public class MainActivity extends Activity {
 				}
 			}
 		}
-	
+
 		mService = null;
 		mIsBound = false;
 	}
@@ -341,7 +341,7 @@ public class MainActivity extends Activity {
 			mTextDashUsb.setText("No USB device present");
 			mTextDashUsbSmall.setVisibility(View.GONE);
 			mTextDashUsbSmall.setText("");
-			
+
 			mTextDashLogControl.setText("No USB NIC plugged in");
 			mImageControl.setImageResource(R.drawable.alert_warning);
 			mRowLogControl.setClickable(false);
@@ -408,7 +408,7 @@ public class MainActivity extends Activity {
 			mTextDashChanhop.setText("Channel hopping disabled");
 			mTextDashChanhopSmall.setText("Locked to channel " + mChannelLock);
 		}
-		
+
 		doUpdateFilesizes();
 	}
 
@@ -442,13 +442,24 @@ public class MainActivity extends Activity {
 		mTextDashChanhop = (TextView) findViewById(R.id.textChannelHop);
 		mTextDashChanhopSmall = (TextView) findViewById(R.id.textChannelHopSmall);
 		mTextManageSmall = (TextView) findViewById(R.id.textManageSmall);
+		mTextDashHardware = (TextView) findViewById(R.id.textDashHardware); 
 
 		mRowLogControl = (TableRow) findViewById(R.id.tableRowLogControl);
 		mRowLogShare = (TableRow) findViewById(R.id.tableRowFile);
 		mRowManage = (TableRow) findViewById(R.id.tableRowManage);
+		mRowHardware = (TableRow) findViewById(R.id.tableRowHardware);
+		mRowHop = (TableRow) findViewById(R.id.tableRowHop);
 
 		mImageControl = (ImageView) findViewById(R.id.imageDashLogControl);
 		mImageShare = (ImageView) findViewById(R.id.imageShare);
+		mImageHardware = (ImageView) findViewById(R.id.imageViewHardware);
+		
+        if (Build.MANUFACTURER.equals("motorola")) {
+        	mTextDashHardware.setText("Motorola hardware has limitations on USB (special power " +
+        			"injectors are needed), check the Help window for a link to more info.");
+        	mImageHardware.setImageResource(R.drawable.alert_warning);
+        	mRowHardware.setVisibility(View.VISIBLE);
+        }
 
 		Intent svc = new Intent(this, PcapService.class);
 		startService(svc);
@@ -460,7 +471,7 @@ public class MainActivity extends Activity {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		mContext.registerReceiver(mUsbReceiver, filter);
-		
+
 		doUpdatePrefs();
 
 		// make the directory on the sdcard
@@ -477,7 +488,7 @@ public class MainActivity extends Activity {
 		list.setRefreshTimer(2000);
 		list.setFavorites(true);
 		list.Populate();
-		*/
+		 */
 		// getFragmentManager().beginTransaction().add(R.id.fragment_filelist, list).commit();
 
 		mRowLogControl.setOnClickListener(new View.OnClickListener() {
@@ -488,20 +499,20 @@ public class MainActivity extends Activity {
 					doUpdateServiceLogs(null, false);
 				} else {
 					mLocalLogging = true;
-					
+
 					Date now = new Date();
 					String snow = now.toString();
 					snow = snow.replace(" ", "-");
 					snow = snow.replace(":", "-");
 					mLogPath = new File(mLogDir + "/android-" + snow + ".cap");
-					
+
 					doUpdateServiceLogs(mLogPath.toString(), true);
 				}
 
 				doUpdateUi();
 			}
 		});
-		
+
 		mRowManage.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -509,11 +520,18 @@ public class MainActivity extends Activity {
 				startActivity(i);
 			}
 		});
-		
+
 		mRowLogShare.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				doShareCurrent();
+			}
+		});
+		
+		mRowHop.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivityForResult(new Intent(MainActivity.this, ChannelPrefs.class), PREFS_REQ);
 			}
 		});
 
@@ -525,7 +543,7 @@ public class MainActivity extends Activity {
 		// Replicate USB intents that come in on the single-top task
 		mUsbReceiver.onReceive(this, intent);
 	}
-	
+
 	@Override
 	public void onStop() {
 		super.onStop();
@@ -538,19 +556,19 @@ public class MainActivity extends Activity {
 		mContext.unregisterReceiver(mUsbReceiver);
 		doUnbindService();
 	}
-	
+
 	@Override 
 	public void onPause() {
 		super.onPause();
-	
+
 		// Log.d(LOGTAG, "Onpause");
 		// doUnbindService();
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
-	
+
 		// Log.d(LOGTAG, "Onresume");
 		// doBindService();
 	}
@@ -567,13 +585,22 @@ public class MainActivity extends Activity {
 		case R.id.menu_settings:
 			startActivityForResult(new Intent(this, ChannelPrefs.class), PREFS_REQ);
 			break;
+
+		case R.id.menu_help:
+			doShowHelp();
+			break;
 		}
 
 		return true;
 	}
 
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(LOGTAG, "Got activity req " + Integer.toString(requestCode)
+                + " result code " + Integer.toString(resultCode));
+
 		if (requestCode == PREFS_REQ) {
+			doUpdatePrefs();
 			doUpdateUi();
 			doUpdateServiceprefs();
 		}
@@ -585,10 +612,39 @@ public class MainActivity extends Activity {
 				false, false, null);
 		long nf = FileUtils.countFiles(new File(mLogDir), new String[] { "cap" }, 
 				false, false, null);
-		
+
 		String textuse = FileUtils.humanSize(ds);
 
 		mTextManageSmall.setText("Using " + textuse + " in " + nf + " logs");
+	}
+
+	protected void doShowHelp() {
+		AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
+
+		WebView wv = new WebView(this);
+		
+		wv.loadUrl("file:///android_asset/html_no_copy/PcapCaptureHelp.html");
+
+		wv.setWebViewClient(new WebViewClient() {
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				Uri uri = Uri.parse(url);
+				Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+				startActivity(intent);
+				
+				return true;
+			}
+		});
+
+		alert.setView(wv);
+		
+		alert.setNegativeButton("Close", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int id) {
+			}
+		});
+		
+		alert.show();
 	}
 	
 	protected void doShareCurrent() {
@@ -598,7 +654,7 @@ public class MainActivity extends Activity {
 
 		alertbox.setMessage("Sharing the active log can result in truncated log files.  This " +
 				"should not cause a problem with most log processors, but for maximum safety, " +
-				"you should stop logging first.");
+		"you should stop logging first.");
 
 		alertbox.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface arg0, int arg1) {
@@ -613,7 +669,7 @@ public class MainActivity extends Activity {
 				startActivity(Intent.createChooser(i, "Share Pcap file"));
 			}
 		});
-		
+
 		alertbox.setNeutralButton("Stop and Share", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface arg0, int arg1) {
 				mShareOnStop = true;
@@ -625,7 +681,7 @@ public class MainActivity extends Activity {
 		alertbox.show();
 
 		/*
-		*/
+		 */
 	}
 
 }

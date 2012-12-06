@@ -9,13 +9,21 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
+
     <application
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" 
+            android:label="@string/title_activity_main"
             android:launchMode="singleTask" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,17 +38,15 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-
         <activity
             android:name=".ChannelPrefs"
             android:label="@string/pref_channel"
             android:theme="@style/AppTheme" />
-        
         <activity
             android:name=".FilemanagerActivity"
             android:label="@string/title_activity_filemanager"
             android:theme="@style/AppTheme" />
-                    
+
         <service
             android:name=".PcapService"
             android:description="@string/pcap_service_desc" />

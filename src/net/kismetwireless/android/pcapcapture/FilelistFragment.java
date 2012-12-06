@@ -15,6 +15,8 @@ package net.kismetwireless.android.pcapcapture;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.TreeMap;
 
 import android.app.Activity;
@@ -29,7 +31,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -127,6 +128,8 @@ public class FilelistFragment extends ListFragment {
 		}
 
 		mFileList = al;
+		
+		Collections.sort(mFileList, new FileDateComparator());
 		
 		if (mFileAdapter != null)
 			mFileAdapter.updateEntries(mFileList);
@@ -234,6 +237,15 @@ public class FilelistFragment extends ListFragment {
 		public void setDirty() {
 			mDirty = true;
 			mLastModified = 0;
+		}
+	}
+	
+	public class FileDateComparator implements Comparator<FileEntry> {
+		@Override
+		public int compare(FileEntry o1, FileEntry o2) {
+			if (o1.getFile().lastModified() < o2.getFile().lastModified())
+				return 1;
+			return 0;
 		}
 	}
 

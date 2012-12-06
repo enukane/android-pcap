@@ -60,10 +60,12 @@
             </TableRow>
 
             <TableRow
-                android:id="@+id/tableRow3"
+                android:id="@+id/tableRowHop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp" >
+                android:layout_marginBottom="10dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true" >
 
                 <ImageView
                     android:id="@+id/imageView4"
@@ -92,7 +94,16 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Channels 1,2,3,4,5,6" />
+
                 </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/ImageView01"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:src="@drawable/navigation_next_item" />
+
             </TableRow>
 
             <TableRow
@@ -142,6 +153,32 @@
                     android:visibility="invisible" />
 
             </TableRow>
+            
+            <TableRow
+                android:id="@+id/tableRowHardware"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="20dp"
+                android:visibility="gone" >
+
+                <ImageView
+                    android:id="@+id/imageViewHardware"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="15dp"
+                    android:src="@drawable/alert_warning" />
+
+                <TextView
+                    android:id="@+id/textDashHardware"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:text="mTextDashHardware" />
+
+            </TableRow>
 
         </TableLayout>
 
@@ -163,6 +200,7 @@
                 android:id="@+id/tableRowManage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true" >
 
@@ -184,7 +222,7 @@
                         android:id="@+id/textManage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Manage Files..."
+                        android:text="Manage Logs..."
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <TextView
