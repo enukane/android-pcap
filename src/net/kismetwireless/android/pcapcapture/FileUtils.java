@@ -77,7 +77,10 @@ public class FileUtils {
 	public static long countFileSizes(File directory, String extensions[], 
 			boolean favorite, boolean nonfavorite, SharedPreferences prefs) {
 		long total = 0;
-	
+
+		if (directory == null)
+			return 0;
+		
 		for (String fn : directory.list()) {
 			boolean pass = false;
 			

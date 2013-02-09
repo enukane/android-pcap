@@ -3,5 +3,7 @@
 <resources>
 	<!--  0x0bda 0x8187 rtl8187 -->
     <usb-device vendor-id="3034" product-id="33159" />
+	<!--  0x0846 0x6a00 netgear WG111v2 -->
+	<usb-device vendor-id="2118" product-id="27136" />
     
 </resources>

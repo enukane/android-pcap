@@ -708,7 +708,9 @@ public class Rtl8187Card extends UsbSource {
         while(deviceIterator.hasNext()){
             UsbDevice device = deviceIterator.next();
             
-            if (device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) {  
+            if ((device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) ||
+				// NETGEAR WG111v2
+				(device.getVendorId() == 0x0846 && device.getProductId() == 0x6a00)) {  
             	rl.add(device);
             }
         }
@@ -718,7 +720,9 @@ public class Rtl8187Card extends UsbSource {
 
 	@Override
 	public boolean scanUsbDevice(UsbDevice device) {
-		if (device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) {  
+		if ((device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) ||
+			// NETGEAR WG111v2
+			(device.getVendorId() == 0x0846 && device.getProductId() == 0x6a00)) {  
 			return true;
 		}
 		
