@@ -708,9 +708,7 @@ public class Rtl8187Card extends UsbSource {
         while(deviceIterator.hasNext()){
             UsbDevice device = deviceIterator.next();
             
-            if ((device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) ||
-				// NETGEAR WG111v2
-				(device.getVendorId() == 0x0846 && device.getProductId() == 0x6a00)) {  
+            if (scanUsbDevice(device)) {
             	rl.add(device);
             }
         }
@@ -720,9 +718,19 @@ public class Rtl8187Card extends UsbSource {
 
 	@Override
 	public boolean scanUsbDevice(UsbDevice device) {
-		if ((device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) ||
+		if (
+			// Alfa AWUS036H, LevelOne WNC-0301USB v5, LevelOne WNC-0305USB
+			(device.getVendorId() == 0x0bda && device.getProductId() == 0x8187) ||
+			
+			// AirLive WL-1600USB
+			(device.getVendorId() == 0x1b75 && device.getProductId() == 0x8187) ||
+			
 			// NETGEAR WG111v2
-			(device.getVendorId() == 0x0846 && device.getProductId() == 0x6a00)) {  
+			(device.getVendorId() == 0x0846 && device.getProductId() == 0x6a00) ||
+			
+			// NETGEAR WG111v3
+			(device.getVendorId() == 0x0846 && device.getProductId() == 0x4260)
+		) {
 			return true;
 		}
 		
@@ -1907,7 +1915,13 @@ public class Rtl8187Card extends UsbSource {
     	mRadioActive = true;
     	sendRadioState();
     	
-    	if (device.getVendorId() == 0x0dba && device.getProductId() == 0x8187) {
+    	if (
+    			// LevelOne WNC-0301USB v5
+				(device.getVendorId() == 0x0dba && device.getProductId() == 0x8187) ||
+				
+				// NetGear WG111v3
+				(device.getVendorId() == 0x0846 && device.getProductId() == 0x4260)
+		) {
     		// It's got a chance of being an 8187b
     		is_rtl8187b = 1;
     	}
